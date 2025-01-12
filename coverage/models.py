@@ -3,22 +3,36 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
+class Contract(models.Model):
+
+    number = models.CharField(verbose_name='Contract Number', max_length=64)
+    seller = models.ForeignKey(
+        'Entity',
+        on_delete=models.CASCADE,
+        verbose_name='Selling Company'
+    )
+    buyer = models.ForeignKey(
+        'Entity',
+        on_delete=models.CASCADE,
+        verbose_name='Buying Company'
+    )
+
+
 class Coverage(models.Model):
 
-    provider = models.ForeignKey(
-        'Entity',
+    shipment = models.ForeignKey(
+        'Shipment',
+        on_delete=models.CASCADE,
+    )
+    policy = models.ForeignKey(
+        'Policy',
         on_delete=models.SET_NULL,
-        verbose_name='Underwriter',
+        verbose_name='Underwriter`s Policy',
         blank=True,
         null=True
     )
-    reference = models.CharField(
-        verbose_name='Underwriter`s Risk Reference',
-        max_length=64,
-        default='#'
-    )
-    invoice_number = models.CharField(
-        verbose_name='Underwriter`s Invoice Reference',
+    debit_note = models.CharField(
+        verbose_name='Underwriter`s Debit Note',
         max_length=32,
         default='#'
     )
@@ -54,6 +68,7 @@ class Document(models.Model):
         CLASS_CERTIFICATE = 'class_certificate', _('Class Certificate')
         P_I_POLICY = 'p_i_policy', _('P & I Policy')
 
+    number = models.CharField(max_length=64)
     category = models.CharField(
         blank=False,
         choices=Category.choices,
@@ -68,7 +83,6 @@ class Document(models.Model):
         on_delete=models.SET_NULL,
         null=True
     )
-    number = models.CharField(max_length=64)
     date = models.DateField()
 
     @property
@@ -96,9 +110,15 @@ class Operator(models.Model):
 
 class Policy(models.Model):
 
-    provider = models.ForeignKey('Entity', on_delete=models.CASCADE, related_name='underwriter')
-    insured = models.ForeignKey('Entity', on_delete=models.CASCADE, related_name='policyholder')
     number = models.CharField(max_length=32)
+    provider = models.ForeignKey(
+        Entity,
+        on_delete=models.CASCADE,
+    )
+    insured = models.ForeignKey(
+        Entity,
+        on_delete=models.CASCADE,
+    )
     date = models.DateField()
     inception = models.DateTimeField()
     expiry = models.DateTimeField()
@@ -106,48 +126,39 @@ class Policy(models.Model):
 
 class Shipment(models.Model):
 
-    trade = models.ForeignKey(
-        'Trade',
+    number = models.PositiveIntegerField(verbose_name='Deal Number')
+    contract = models.ForeignKey(
+        'Contract',
         on_delete=models.CASCADE,
-        related_name='parcels',
-        verbose_name='General Trade'
+        verbose_name='Sell Contract'
     )
     operator = models.ForeignKey(
         Operator,
         on_delete=models.CASCADE,
-        related_name='parcels',
-        verbose_name='Trade'
+        verbose_name='Operator'
     )
-    bl_date = models.DateField(verbose_name='Bill of Lading Date')
+    date = models.DateField(verbose_name='Bill of Lading Date, Roughly')
     disport_eta = models.DateTimeField(
         verbose_name='Discharge Port ETA or NOR'
     )
-    volume = models.DecimalField(
-        verbose_name='Volume for Fluid Cargo, bbl',
-        decimal_places=6,
-        max_digits=16
-    )
-    weight = models.DecimalField(
-        verbose_name='Weight, MT',
+    quantity = models.DecimalField(
+        verbose_name='Quantity',
         decimal_places=6,
         max_digits=16
     )
     loadport = models.ForeignKey(
         Location,
         on_delete=models.CASCADE,
-        related_name='origin',
         verbose_name='Port of Loading'
     )
     disport = models.ForeignKey(
         Location,
         on_delete=models.CASCADE,
-        related_name='destination',
         verbose_name='Port of Discharge'
     )
     surveyor_loadport = models.ForeignKey(
         Entity,
         on_delete=models.CASCADE,
-        related_name='parcels',
         verbose_name='Surveyor Company at Port of Loading',
         blank=True,
         null=True
@@ -155,29 +166,10 @@ class Shipment(models.Model):
     surveyor_disport = models.ForeignKey(
         Entity,
         on_delete=models.CASCADE,
-        related_name='parcels',
         verbose_name='Surveyor Company at Port of Discharge',
         blank=True,
         null=True
     )
-
-
-class Trade(models.Model):
-
-    number = models.PositiveIntegerField(verbose_name='Deal Number')
-    insured = models.ForeignKey(
-        Entity,
-        on_delete=models.CASCADE,
-        related_name='trades',
-        verbose_name='Company'
-    )
-    beneficiary = models.ForeignKey(
-        Entity,
-        on_delete=models.CASCADE,
-        related_name='trades',
-        verbose_name='Counterparty'
-    )
-    contract_number = models.CharField(verbose_name='Contract Number', max_length=64)
     ccy = models.CharField(verbose_name='Currency', max_length=3)
     unit = models.CharField(max_length=16)
     quote_per_unit = models.DecimalField(decimal_places=6, max_digits=12)
@@ -188,4 +180,4 @@ class Vessel(models.Model):
 
     vessel = models.CharField(max_length=32)
     imo = models.PositiveIntegerField()
-    date_built = models.DateField()
+    built_on = models.DateField()
