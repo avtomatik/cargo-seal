@@ -122,3 +122,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# .idea
+.idea
+.vscode
+# Apple Desktop Services Store
+.DS_Store
+
+static/
+media/
