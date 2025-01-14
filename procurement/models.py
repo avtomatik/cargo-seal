@@ -1,6 +1,7 @@
 from django.db import models
 
-from core.constants import MAX_LENGTH_CHAR, MAX_LENGTH_TEXT
+from core.constants import MAX_LENGTH_CHAR
+from core.models import Entity
 
 
 class Contract(models.Model):
@@ -8,24 +9,17 @@ class Contract(models.Model):
     number = models.CharField(
         verbose_name='Contract Number', max_length=MAX_LENGTH_CHAR)
     seller = models.ForeignKey(
-        'Entity',
+        'Party',
         on_delete=models.CASCADE,
         verbose_name='Selling Company'
     )
     buyer = models.ForeignKey(
-        'Entity',
+        'Party',
         on_delete=models.CASCADE,
         verbose_name='Buying Company'
     )
 
 
-class Entity(models.Model):
+class Party(Entity):
 
-    name = models.CharField(
-        verbose_name='Entity`s Name',
-        max_length=MAX_LENGTH_TEXT
-    )
-    address = models.CharField(
-        verbose_name='Entity`s Title',
-        max_length=MAX_LENGTH_TEXT
-    )
+    pass

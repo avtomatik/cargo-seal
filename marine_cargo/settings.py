@@ -48,11 +48,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'api',
-    'coverage',
-    'logistics',
-    'procurement',
-    'vessels',
+
+    # =========================================================================
+    # Project Applications
+    # =========================================================================
+    'api.apps.ApiConfig',
+    'core.apps.CoreConfig',
+    'coverage.apps.CoverageConfig',
+    'logistics.apps.LogisticsConfig',
+    'procurement.apps.ProcurementConfig',
+    'vessels.apps.VesselsConfig',
 ]
 
 MIDDLEWARE = [

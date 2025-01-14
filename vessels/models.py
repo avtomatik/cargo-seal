@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from core.constants import MAX_LENGTH_CHAR, MAX_LENGTH_REF
-from procurement.models import Entity
+from procurement.models import Party
 
 
 class Document(models.Model):
@@ -23,7 +23,7 @@ class Document(models.Model):
         on_delete=models.CASCADE
     )
     provider = models.ForeignKey(
-        Entity,
+        Party,
         on_delete=models.SET_NULL,
         null=True
     )

@@ -2,7 +2,7 @@ from django.db import models
 
 from core.constants import (MAX_LENGTH_CCY, MAX_LENGTH_CHAR, MAX_LENGTH_TEXT,
                             MAX_LENGTH_UNIT)
-from procurement.models import Contract, Entity
+from procurement.models import Contract, Party
 
 
 class Location(models.Model):
@@ -62,14 +62,14 @@ class Shipment(models.Model):
         verbose_name='Port of Discharge'
     )
     surveyor_loadport = models.ForeignKey(
-        Entity,
+        Party,
         on_delete=models.CASCADE,
         verbose_name='Surveyor Company at Port of Loading',
         blank=True,
         null=True
     )
     surveyor_disport = models.ForeignKey(
-        Entity,
+        Party,
         on_delete=models.CASCADE,
         verbose_name='Surveyor Company at Port of Discharge',
         blank=True,
