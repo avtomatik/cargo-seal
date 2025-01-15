@@ -46,6 +46,10 @@ class Vessel(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
+                fields=['name', 'imo'],
+                name='unique_name_imo'
+            ),
+            models.UniqueConstraint(
                 fields=['imo', 'built_on'],
                 name='unique_imo_date_built'
             )
