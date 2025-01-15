@@ -51,12 +51,17 @@ class Policy(models.Model):
     number = models.CharField(max_length=MAX_LENGTH_REF)
     provider = models.ForeignKey(
         Party,
+        related_name='provider_policies',
         on_delete=models.CASCADE,
     )
     insured = models.ForeignKey(
         Party,
+        related_name='insured_policies',
         on_delete=models.CASCADE,
     )
     date = models.DateField()
     inception = models.DateTimeField()
     expiry = models.DateTimeField()
+
+    def __str__(self):
+        return f'Policy # {self.number}'

@@ -13,3 +13,6 @@ class Entity(models.Model):
         verbose_name='Entity`s Address',
         max_length=MAX_LENGTH_TEXT
     )
+
+    class Meta:
+        abstract = True

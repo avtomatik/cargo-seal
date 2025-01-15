@@ -33,9 +33,15 @@ class Document(models.Model):
     def is_valid(self):
         return timezone.now().date() >= self.date
 
+    def __str__(self):
+        return f'Ref # {self.number}'
+
 
 class Vessel(models.Model):
 
-    vessel = models.CharField(max_length=MAX_LENGTH_REF)
+    name = models.CharField(max_length=MAX_LENGTH_REF)
     imo = models.PositiveIntegerField()
     built_on = models.DateField()
+
+    def __str__(self):
+        return f'{self.name}, IMO: {self.imo}'
