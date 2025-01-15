@@ -43,5 +43,13 @@ class Vessel(models.Model):
     imo = models.PositiveIntegerField()
     built_on = models.DateField()
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['imo', 'built_on'],
+                name='unique_imo_date_built'
+            )
+        ]
+
     def __str__(self):
         return f'{self.name}, IMO: {self.imo}'
