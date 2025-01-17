@@ -33,6 +33,14 @@ class Document(models.Model):
     def is_valid(self):
         return timezone.now().date() >= self.date
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['provider', 'number'],
+                name='unique_provider_number'
+            )
+        ]
+
     def __str__(self):
         return f'Ref # {self.number}'
 
@@ -45,10 +53,6 @@ class Vessel(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(
-                fields=['name', 'imo'],
-                name='unique_name_imo'
-            ),
             models.UniqueConstraint(
                 fields=['imo', 'built_on'],
                 name='unique_imo_date_built'
