@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jan 15 17:42:06 2025
+Created on Fri Jan 17 17:47:51 2025
 
 @author: Aleksandr.Mikhailov
 """
@@ -10,27 +10,28 @@ import csv
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from vessels.models import Vessel
+from procurement.models import Party
 
 
 class Command(BaseCommand):
 
     PATH_DATA = 'data'
 
-    FILE_NAME = 'vessels_vessel.csv'
+    FILE_NAME = 'procurement_party.csv'
 
-    FIELD_NAMES = ['name', 'imo', 'built_on']
+    FIELD_NAMES = ['name', 'address']
 
     PATH = settings.BASE_DIR.joinpath(PATH_DATA)
 
-    help = 'Populates DB with Vessels Data'
+    help = 'Populates DB with Counterparties Data'
 
     def handle(self, *args, **options):
 
         with open(self.PATH.joinpath(self.FILE_NAME), encoding='utf8') as file:
             reader = csv.DictReader(file, fieldnames=self.FIELD_NAMES)
-            Vessel.objects.bulk_create(Vessel(**_) for _ in reader)
+            Party.objects.bulk_create(Party(**_) for _ in reader)
 
         self.stdout.write(
-            self.style.SUCCESS('Successfully Populated DB with Vessels Data')
+            self.style.SUCCESS(
+                'Successfully Populated DB with Counterparties Data')
         )
