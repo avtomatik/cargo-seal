@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from core.constants import MAX_LENGTH_CHAR, MAX_LENGTH_REF
-from procurement.models import Entity
+from procurement.models import Party
 
 
 class Document(models.Model):
@@ -23,7 +23,7 @@ class Document(models.Model):
         on_delete=models.CASCADE
     )
     provider = models.ForeignKey(
-        Entity,
+        Party,
         on_delete=models.SET_NULL,
         null=True
     )
@@ -33,9 +33,31 @@ class Document(models.Model):
     def is_valid(self):
         return timezone.now().date() >= self.date
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['provider', 'number'],
+                name='unique_provider_number'
+            )
+        ]
+
+    def __str__(self):
+        return f'Ref # {self.number}'
+
 
 class Vessel(models.Model):
 
-    vessel = models.CharField(max_length=MAX_LENGTH_REF)
+    name = models.CharField(max_length=MAX_LENGTH_REF)
     imo = models.PositiveIntegerField()
     built_on = models.DateField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['imo', 'built_on'],
+                name='unique_imo_date_built'
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.name}, IMO: {self.imo}'

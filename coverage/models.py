@@ -2,7 +2,7 @@ from django.db import models
 
 from core.constants import MAX_LENGTH_REF
 from logistics.models import Shipment
-from procurement.models import Entity
+from procurement.models import Party
 
 
 class Coverage(models.Model):
@@ -50,13 +50,18 @@ class Policy(models.Model):
 
     number = models.CharField(max_length=MAX_LENGTH_REF)
     provider = models.ForeignKey(
-        Entity,
+        Party,
+        related_name='provider_policies',
         on_delete=models.CASCADE,
     )
     insured = models.ForeignKey(
-        Entity,
+        Party,
+        related_name='insured_policies',
         on_delete=models.CASCADE,
     )
     date = models.DateField()
     inception = models.DateTimeField()
     expiry = models.DateTimeField()
+
+    def __str__(self):
+        return f'Policy # {self.number}'

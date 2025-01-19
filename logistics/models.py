@@ -2,12 +2,12 @@ from django.db import models
 
 from core.constants import (MAX_LENGTH_CCY, MAX_LENGTH_CHAR, MAX_LENGTH_TEXT,
                             MAX_LENGTH_UNIT)
-from procurement.models import Contract, Entity
+from procurement.models import Contract, Party
 
 
 class Location(models.Model):
 
-    locality = models.CharField(
+    name = models.CharField(
         verbose_name='Port Locality',
         max_length=MAX_LENGTH_CHAR
     )
@@ -15,6 +15,9 @@ class Location(models.Model):
         verbose_name='Port Country',
         max_length=MAX_LENGTH_CHAR
     )
+
+    def __str__(self):
+        return self.name
 
 
 class Operator(models.Model):
@@ -27,6 +30,9 @@ class Operator(models.Model):
         verbose_name='Last Name',
         max_length=MAX_LENGTH_CHAR
     )
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
 
 
 class Shipment(models.Model):
@@ -53,23 +59,27 @@ class Shipment(models.Model):
     )
     loadport = models.ForeignKey(
         Location,
+        related_name='loadport_shipments',
         on_delete=models.CASCADE,
         verbose_name='Port of Loading'
     )
     disport = models.ForeignKey(
         Location,
+        related_name='disport_shipments',
         on_delete=models.CASCADE,
         verbose_name='Port of Discharge'
     )
     surveyor_loadport = models.ForeignKey(
-        Entity,
+        Party,
+        related_name='loadport_surveyors',
         on_delete=models.CASCADE,
         verbose_name='Surveyor Company at Port of Loading',
         blank=True,
         null=True
     )
     surveyor_disport = models.ForeignKey(
-        Entity,
+        Party,
+        related_name='disport_surveyors',
         on_delete=models.CASCADE,
         verbose_name='Surveyor Company at Port of Discharge',
         blank=True,
@@ -79,3 +89,6 @@ class Shipment(models.Model):
     unit = models.CharField(max_length=MAX_LENGTH_UNIT)
     quote_per_unit = models.DecimalField(decimal_places=6, max_digits=12)
     subject_matter_insured = models.CharField(max_length=MAX_LENGTH_TEXT)
+
+    def __str__(self):
+        return f'Deal # {self.number}'
