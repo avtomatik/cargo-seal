@@ -31,7 +31,7 @@ class Document(models.Model):
 
     @property
     def is_valid(self):
-        return timezone.now().date() >= self.date
+        return self.date >= timezone.now().date()
 
     class Meta:
         constraints = [

@@ -8,7 +8,7 @@ class PartySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Party
-        fields = '__all__'
+        fields = ['name']
 
 
 class VesselSerializer(serializers.ModelSerializer):
@@ -22,6 +22,7 @@ class DocumentSerializer(serializers.ModelSerializer):
 
     vessel = VesselSerializer()
     provider = PartySerializer()
+    is_valid = serializers.ReadOnlyField()
 
     class Meta:
         model = Document
