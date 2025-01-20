@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 
-from api.serializers import VesselSerializer
+from api.serializers import DocumentSerializer, VesselSerializer
 from vessels.models import Document, Vessel
 
 
