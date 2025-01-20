@@ -1,7 +1,15 @@
 from rest_framework import serializers
 
+from coverage.models import Coverage
 from procurement.models import Party
 from vessels.models import Document, Vessel
+
+
+class CoverageSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Coverage
+        fields = '__all__'
 
 
 class PartySerializer(serializers.ModelSerializer):
