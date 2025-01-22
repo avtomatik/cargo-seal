@@ -31,6 +31,9 @@ class Document(models.Model):
 
     @property
     def is_valid(self):
+        # =====================================================================
+        # TODO: Implement `Expires in ... Days`
+        # =====================================================================
         return timezone.now().date() >= self.date
 
     class Meta:

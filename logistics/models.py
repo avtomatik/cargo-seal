@@ -52,11 +52,6 @@ class Shipment(models.Model):
     disport_eta = models.DateTimeField(
         verbose_name='Discharge Port ETA or NOR'
     )
-    quantity = models.DecimalField(
-        verbose_name='Quantity',
-        decimal_places=6,
-        max_digits=16
-    )
     loadport = models.ForeignKey(
         Location,
         related_name='loadport_shipments',
@@ -86,9 +81,30 @@ class Shipment(models.Model):
         null=True
     )
     ccy = models.CharField(verbose_name='Currency', max_length=MAX_LENGTH_CCY)
-    unit = models.CharField(max_length=MAX_LENGTH_UNIT)
-    quote_per_unit = models.DecimalField(decimal_places=6, max_digits=12)
+    unit = models.CharField(max_length=MAX_LENGTH_UNIT, default='bbl')
+    volume_bbl = models.DecimalField(
+        verbose_name='Quantity, bbl',
+        decimal_places=6,
+        max_digits=16
+    )
+    weight_metric = models.DecimalField(
+        verbose_name='Quantity, MT',
+        decimal_places=6,
+        max_digits=16
+    )
     subject_matter_insured = models.CharField(max_length=MAX_LENGTH_TEXT)
+
+# =============================================================================
+# TODO: Introduce The Below Fields Later:
+# =============================================================================
+# =============================================================================
+#     quantity = models.DecimalField(
+#         verbose_name='Quantity',
+#         decimal_places=6,
+#         max_digits=16
+#     )
+#     quote_per_unit = models.DecimalField(decimal_places=6, max_digits=12)
+# =============================================================================
 
     def __str__(self):
         return f'Deal # {self.number}'
