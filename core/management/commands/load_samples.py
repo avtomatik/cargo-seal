@@ -16,6 +16,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Main Class Method."""
 
+        call_command('load_locations', *args, **options)
         call_command('load_parties', *args, **options)
         call_command('load_vessels', *args, **options)
         call_command('load_documents', *args, **options)
