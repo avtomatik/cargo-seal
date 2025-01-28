@@ -36,11 +36,17 @@ class CoverageViewSet(viewsets.ModelViewSet):
         # TODO: Make It Clear
         # =====================================================================
         file = request.data.get('file')
+
         if file:
-            sheet_names, last_modified_by = self.extract_workbook_data(file)
+            SHEET_NAMES_EXPECTED = ('declaration_form', 'bl_breakdown')
+
+            sheet_names, version, last_modified_by = self.extract_workbook_data(
+                file
+            )
+
             df_frm = pd.read_excel(
                 file,
-                sheet_name='declaration_form',
+                sheet_name=SHEET_NAMES_EXPECTED[0],
                 names=('headers', 'current'),
                 index_col=0,
                 skiprows=1,
@@ -54,8 +60,8 @@ class CoverageViewSet(viewsets.ModelViewSet):
             with open(settings.BASE_DIR.joinpath('data').joinpath('columns.json')) as file:
                 COLUMNS_ALL = json.load(file)
 
-            if all(x == y for x, y in zip(df_frm.columns, COLUMNS_ALL['Version 2023-05-12']['expected'])):
-                df_frm.columns = COLUMNS_ALL['Version 2023-05-12']['fitted']
+            if all(x == y for x, y in zip(df_frm.columns, COLUMNS_ALL[version]['expected'])):
+                df_frm.columns = COLUMNS_ALL[version]['fitted']
 
             data = df_frm.loc['current'].to_dict()
             data['operator'] = last_modified_by
@@ -70,9 +76,10 @@ class CoverageViewSet(viewsets.ModelViewSet):
     def extract_workbook_data(self, file):
         wb = load_workbook(file, read_only=True, keep_links=False)
         sheet_names = wb.sheetnames
+        version = wb['declaration_form']['A1'].value
         last_modified_by = wb.properties.lastModifiedBy
         wb.close()
-        return sheet_names, last_modified_by
+        return sheet_names, version, last_modified_by
 
     def trim_string(self, string: str, fill: str = ' ', char: str = r'\W') -> str:
         return fill.join(filter(bool, re.split(char, string)))
