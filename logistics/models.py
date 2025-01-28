@@ -17,7 +17,7 @@ class Location(models.Model):
     )
 
     def __str__(self):
-        return self.name
+        return f'{self.name} ({self.country})'
 
 
 class Operator(models.Model):
