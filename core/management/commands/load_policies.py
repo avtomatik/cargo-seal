@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jan 29 12:16:43 2025
+Created on Wed Jan 29 12:39:27 2025
 
 @author: Aleksandr.Mikhailov
 """
@@ -10,27 +10,29 @@ import csv
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from procurement.models import Contract
+from coverage.models import Policy
 
 
 class Command(BaseCommand):
 
     PATH_DATA = 'data'
 
-    FILE_NAME = 'procurement_contract.csv'
+    FILE_NAME = 'coverage_policy.csv'
 
-    FIELD_NAMES = ['number', 'buyer_id', 'seller_id']
+    FIELD_NAMES = [
+        'number', 'date', 'inception', 'expiry', 'insured_id', 'provider_id'
+    ]
 
     PATH = settings.BASE_DIR.joinpath(PATH_DATA)
 
-    help = 'Populates DB with Contracts Data'
+    help = 'Populates DB with Policies Data'
 
     def handle(self, *args, **options):
 
         with open(self.PATH.joinpath(self.FILE_NAME), encoding='utf8') as file:
             reader = csv.DictReader(file, fieldnames=self.FIELD_NAMES)
-            Contract.objects.bulk_create(Contract(**_) for _ in reader)
+            Policy.objects.bulk_create(Policy(**_) for _ in reader)
 
         self.stdout.write(
-            self.style.SUCCESS('Successfully Populated DB with Contracts Data')
+            self.style.SUCCESS('Successfully Populated DB with Policies Data')
         )
