@@ -58,20 +58,38 @@ class CoverageViewSet(viewsets.ModelViewSet):
             )
 
             with open(settings.BASE_DIR.joinpath('data').joinpath('columns.json')) as file:
-                COLUMNS_ALL = json.load(file)
+                COLUMNS = json.load(file)
 
-            if all(x == y for x, y in zip(df_frm.columns, COLUMNS_ALL[version]['expected'])):
-                df_frm.columns = COLUMNS_ALL[version]['fitted']
+            if all(x == y for x, y in zip(df_frm.columns, COLUMNS[version]['expected'])):
+                df_frm.columns = COLUMNS[version]['fitted']
 
-            data = df_frm.loc['current'].to_dict()
-            data['operator'] = last_modified_by
-            data.pop('_', None)
+            data_received = df_frm.loc['current'].to_dict()
+            data_received['operator'] = last_modified_by
+
+            data_received.pop('basis_of_valuation', None)
+            data_received.pop('subject_matter_insured', None)
+            data_received.pop('_', None)
 
         # =====================================================================
-        # TODO: Validate
+        # TODO: Validation
         # =====================================================================
+            data = {}
+
+            for key, value in data_received.items():
+                value_distillated = self.distillate_value(value)
+                if value_distillated:
+                    data[key] = value_distillated
+
             return Response({'data': data}, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    def distillate_value(self, value):
+        if isinstance(value, str):
+            string = self.trim_string(value).title()
+            if string in ['Not Disclosed', 'Tba', 'Unknown']:
+                return
+            return string
+        return value
 
     def extract_workbook_data(self, file):
         wb = load_workbook(file, read_only=True, keep_links=False)
