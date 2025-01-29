@@ -80,7 +80,7 @@ class CoverageViewSet(viewsets.ModelViewSet):
                 if value_distillated:
                     data[key] = value_distillated
 
-            return Response({'data': data}, status=status.HTTP_200_OK)
+            return Response(data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def distillate_value(self, value):
