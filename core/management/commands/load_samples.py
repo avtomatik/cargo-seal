@@ -23,3 +23,4 @@ class Command(BaseCommand):
         call_command('load_contracts', *args, **options)
         call_command('load_documents', *args, **options)
         call_command('load_policies', *args, **options)
+        call_command('load_shipments', *args, **options)

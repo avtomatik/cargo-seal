@@ -20,7 +20,12 @@ class Command(BaseCommand):
     FILE_NAME = 'coverage_policy.csv'
 
     FIELD_NAMES = [
-        'number', 'date', 'inception', 'expiry', 'insured_id', 'provider_id'
+        'number',
+        'date',
+        'inception',
+        'expiry',
+        'insured_id',
+        'provider_id'
     ]
 
     PATH = settings.BASE_DIR.joinpath(PATH_DATA)
