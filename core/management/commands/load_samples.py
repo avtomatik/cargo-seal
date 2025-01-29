@@ -20,4 +20,5 @@ class Command(BaseCommand):
         call_command('load_operators', *args, **options)
         call_command('load_parties', *args, **options)
         call_command('load_vessels', *args, **options)
+        call_command('load_contracts', *args, **options)
         call_command('load_documents', *args, **options)
