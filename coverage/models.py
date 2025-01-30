@@ -59,7 +59,6 @@ class Policy(models.Model):
         related_name='insured_policies',
         on_delete=models.CASCADE,
     )
-    date = models.DateField()
     inception = models.DateTimeField()
     expiry = models.DateTimeField()
 

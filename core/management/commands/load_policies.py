@@ -21,7 +21,6 @@ class Command(BaseCommand):
 
     FIELD_NAMES = [
         'number',
-        'date',
         'inception',
         'expiry',
         'insured_id',
