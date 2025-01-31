@@ -3,6 +3,7 @@ from django.db import models
 from core.constants import (MAX_LENGTH_CCY, MAX_LENGTH_CHAR, MAX_LENGTH_TEXT,
                             MAX_LENGTH_UNIT)
 from procurement.models import Contract, Party
+from vessels.models import Vessel
 
 
 class Location(models.Model):
@@ -80,8 +81,16 @@ class Shipment(models.Model):
         blank=True,
         null=True
     )
-    ccy = models.CharField(verbose_name='Currency', max_length=MAX_LENGTH_CCY)
+    ccy = models.CharField(
+        verbose_name='Currency',
+        max_length=MAX_LENGTH_CCY,
+        default='USD'
+    )
     unit = models.CharField(max_length=MAX_LENGTH_UNIT, default='bbl')
+    vessel = models.ForeignKey(
+        Vessel,
+        on_delete=models.CASCADE
+    )
     volume_bbl = models.DecimalField(
         verbose_name='Quantity, bbl',
         decimal_places=6,
@@ -93,6 +102,11 @@ class Shipment(models.Model):
         max_digits=16
     )
     subject_matter_insured = models.CharField(max_length=MAX_LENGTH_TEXT)
+    sum_insured = models.DecimalField(
+        verbose_name='Product Value',
+        decimal_places=6,
+        max_digits=16
+    )
 
 # =============================================================================
 # TODO: Introduce The Below Fields Later:

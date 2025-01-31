@@ -36,15 +36,10 @@ class Coverage(models.Model):
         max_digits=9,
         default=.0
     )
-    sum_insured = models.DecimalField(
-        verbose_name='Sum Insured',
-        decimal_places=6,
-        max_digits=16
-    )
 
     @property
     def premium(self):
-        return self.sum_insured * (
+        return self.shipment.sum_insured * (
             self.ordinary_risks_rate + self.war_risks_rate
         )
 
