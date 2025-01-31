@@ -27,10 +27,26 @@ class CoverageViewSet(viewsets.ModelViewSet):
     serializer_class = CoverageSerializer
     parser_classes = [FormParser, MultiPartParser]
 
+    @action(methods=['get', 'post'], detail=True)
+    def draft(self, request):
+        if request.method == 'GET':
+            # TODO: Implement: Produce Coverage Documents
+            return Response(
+                {'message': 'This Endpoint Functionality Is Under Construction'},
+                status=status.HTTP_200_OK
+            )
+        if request.method == 'POST':
+            # TODO: Implement: Translate Form to Documents
+            return Response(
+                {'message': 'This Endpoint Functionality Is Under Construction'},
+                status=status.HTTP_200_OK
+            )
+
     @action(methods=['post'], detail=False)
-    def submit(self, request):
+    def push(self, request):
+        """Push Declaration to Database Handler."""
         # =====================================================================
-        # curl -X POST -F "file=@path/to/file;type=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" http://localhost:8000/api/coverage/submit/
+        # curl -X POST -F "file=@path/to/file;type=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" http://localhost:8000/api/coverage/push/
         # =====================================================================
         # =====================================================================
         # TODO: Make It Clear
@@ -107,3 +123,11 @@ class VesselViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Vessel.objects.all()
     serializer_class = VesselSerializer
+
+    @action(methods=['post'], detail=True)
+    def check(self, request):
+        # TODO: Implement
+        return Response(
+            {'message': 'This Endpoint Functionality Is Under Construction'},
+            status=status.HTTP_200_OK
+        )
