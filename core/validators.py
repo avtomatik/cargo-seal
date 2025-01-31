@@ -6,12 +6,11 @@ Created on Sun Jan 12 16:45:18 2025
 @author: alexandermikhailov
 """
 
-from operator import mul
-
 from django.core.exceptions import ValidationError
 
 
 class IMOValidator:
+    """TODO: Plug to `Vessel` Model."""
 
     def __call__(self, value):
 
@@ -23,5 +22,5 @@ class IMOValidator:
 
         number = numbers.pop(0)
 
-        if sum(map(mul, numbers, range(2, 8))) % 10 != number:
+        if sum(x * y for x, y in zip(numbers, range(2, 8))) % 10 != number:
             raise ValidationError('Not A Valid IMO-Number.')
