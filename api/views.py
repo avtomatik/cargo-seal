@@ -73,6 +73,35 @@ class CoverageViewSet(viewsets.ModelViewSet):
                 lambda _: self.trim_string(_, '_').lower(), df_frm.columns
             )
 
+            df_bls = pd.read_excel(
+                file,
+                sheet_name=SHEET_NAMES_EXPECTED[-1]
+            ).dropna(axis=0)
+
+            df_bls.columns = map(
+                lambda _: self.trim_string(_, '_').lower(), df_bls.columns
+            )
+
+            df_bls['subject_matter_insured'] = df_bls['subject_matter_insured'].apply(
+                self.trim_string
+            ).apply(str.title)
+
+            df_bls = df_bls.sort_values(by='bl_date')
+
+            df_bls = df_bls.groupby('subject_matter_insured').agg({
+                'bl_number': 'count',
+                'bl_date': 'max',
+                'weight_mt_in_vacuum': 'sum',
+                'volume_bbl': 'sum',
+                'sum_insured_100_usd': 'sum',
+            })
+
+            # df_bls['deal_number'] = deal_number
+
+            # df_bls = df_bls.reset_index().set_index('deal_number')
+
+            print(df_bls)
+
             with open(settings.BASE_DIR.joinpath('data').joinpath('columns.json')) as file:
                 COLUMNS = json.load(file)
 
