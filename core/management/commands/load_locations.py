@@ -19,7 +19,7 @@ class Command(BaseCommand):
 
     FILE_NAME = 'logistics_location.csv'
 
-    FIELD_NAMES = ['locality', 'country']
+    FIELD_NAMES = ['name', 'country']
 
     PATH = settings.BASE_DIR.joinpath(PATH_DATA)
 
@@ -29,6 +29,7 @@ class Command(BaseCommand):
 
         with open(self.PATH.joinpath(self.FILE_NAME), encoding='utf8') as file:
             reader = csv.DictReader(file, fieldnames=self.FIELD_NAMES)
+            next(reader)
             Location.objects.bulk_create(Location(**_) for _ in reader)
 
         self.stdout.write(

@@ -23,17 +23,19 @@ class Command(BaseCommand):
         'number',
         'date',
         'disport_eta',
-        'quantity',
+        'volume_bbl',
+        'weight_metric',
         'ccy',
         'unit',
-        'quote_per_unit',
         'subject_matter_insured',
         'contract_id',
         'disport_id',
         'loadport_id',
         'operator_id',
         'surveyor_disport_id',
-        'surveyor_loadport_id'
+        'surveyor_loadport_id',
+        'sum_insured',
+        'vessel_id'
     ]
 
     PATH = settings.BASE_DIR.joinpath(PATH_DATA)
@@ -44,6 +46,7 @@ class Command(BaseCommand):
 
         with open(self.PATH.joinpath(self.FILE_NAME), encoding='utf8') as file:
             reader = csv.DictReader(file, fieldnames=self.FIELD_NAMES)
+            next(reader)
             Shipment.objects.bulk_create(Shipment(**_) for _ in reader)
 
         self.stdout.write(

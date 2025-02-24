@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 
 from core.constants import (MAX_LENGTH_CCY, MAX_LENGTH_CHAR, MAX_LENGTH_TEXT,
@@ -38,16 +40,21 @@ class Operator(models.Model):
 
 class Shipment(models.Model):
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     number = models.PositiveIntegerField(verbose_name='Deal Number')
     contract = models.ForeignKey(
         Contract,
         on_delete=models.CASCADE,
-        verbose_name='Sell Contract'
+        verbose_name='Sell Contract',
+        blank=True,
+        null=True
     )
     operator = models.ForeignKey(
         Operator,
         on_delete=models.CASCADE,
-        verbose_name='Operator'
+        verbose_name='Operator',
+        blank=True,
+        null=True
     )
     date = models.DateField(verbose_name='Bill of Lading Date, Roughly')
     disport_eta = models.DateTimeField(

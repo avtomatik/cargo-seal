@@ -35,6 +35,7 @@ class Command(BaseCommand):
 
         with open(self.PATH.joinpath(self.FILE_NAME), encoding='utf8') as file:
             reader = csv.DictReader(file, fieldnames=self.FIELD_NAMES)
+            next(reader)
             Policy.objects.bulk_create(Policy(**_) for _ in reader)
 
         self.stdout.write(
