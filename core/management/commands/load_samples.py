@@ -24,8 +24,6 @@ class Command(BaseCommand):
         call_command('load_documents', *args, **options)
         call_command('load_policies', *args, **options)
         call_command('load_shipments', *args, **options)
-# =============================================================================
-# Monkey Around Moving UUID Field to Coverage Table
-# =============================================================================
+        # TODO: For Possible Refactoring
         call_command('dump_shipments_uuids', *args, **options)
         call_command('load_coverage', *args, **options)

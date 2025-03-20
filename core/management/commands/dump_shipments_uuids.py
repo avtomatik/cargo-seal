@@ -29,7 +29,7 @@ class Command(BaseCommand):
 
         uuid_list = [str(uuid) for uuid in uuids]
 
-        with open(self.PATH.joinpath(self.FILE_NAME), 'w') as json_file:
+        with self.PATH.joinpath(self.FILE_NAME).open('w') as json_file:
             json.dump(uuid_list, json_file)
 
         self.stdout.write(
