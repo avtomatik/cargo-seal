@@ -7,7 +7,11 @@ from procurement.models import Party
 
 class Coverage(models.Model):
 
-    shipment = models.ForeignKey(Shipment, on_delete=models.CASCADE)
+    shipment = models.OneToOneField(
+        Shipment,
+        on_delete=models.CASCADE,
+        primary_key=True
+    )
     policy = models.ForeignKey(
         'Policy',
         on_delete=models.SET_NULL,

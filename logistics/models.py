@@ -40,7 +40,12 @@ class Operator(models.Model):
 
 class Shipment(models.Model):
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        unique=True
+    )
     number = models.PositiveIntegerField(verbose_name='Deal Number')
     contract = models.ForeignKey(
         Contract,

@@ -24,8 +24,8 @@ class Command(BaseCommand):
         'date',
         'ordinary_risks_rate',
         'war_risks_rate',
+        'policy_id',
         'shipment_id',
-        'policy_id'
     ]
 
     PATH = settings.BASE_DIR.joinpath(PATH_DATA)
