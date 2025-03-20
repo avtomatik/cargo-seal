@@ -1,15 +1,33 @@
 from rest_framework import serializers
 
-from coverage.models import Coverage
+from coverage.models import Coverage, Policy
 from procurement.models import Party
 from vessels.models import Document, Vessel
 
 
+class PolicySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Policy
+        fields = '__all__'
+
+
 class CoverageSerializer(serializers.ModelSerializer):
+
+    policy = PolicySerializer()
+    premium = serializers.ReadOnlyField()
 
     class Meta:
         model = Coverage
-        fields = '__all__'
+        fields = [
+            'shipment',
+            'policy',
+            'debit_note',
+            'date',
+            'ordinary_risks_rate',
+            'war_risks_rate',
+            'premium'
+        ]
 
 
 class FormFieldsSerializer(serializers.Serializer):

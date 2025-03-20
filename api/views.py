@@ -10,8 +10,8 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
 from api.serializers import (CoverageSerializer, DocumentSerializer,
-                             VesselSerializer)
-from coverage.models import Coverage
+                             PolicySerializer, VesselSerializer)
+from coverage.models import Coverage, Policy
 from vessels.models import Document, Vessel
 
 
@@ -146,6 +146,12 @@ class CoverageViewSet(viewsets.ModelViewSet):
 
     def trim_string(self, string: str, fill: str = ' ', char: str = r'\W') -> str:
         return fill.join(filter(bool, re.split(char, string)))
+
+
+class PolicyViewSet(viewsets.ReadOnlyModelViewSet):
+
+    queryset = Policy.objects.all()
+    serializer_class = PolicySerializer
 
 
 class VesselViewSet(viewsets.ReadOnlyModelViewSet):
