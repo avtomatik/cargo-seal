@@ -27,4 +27,5 @@ class Command(BaseCommand):
 # =============================================================================
 # Monkey Around Moving UUID Field to Coverage Table
 # =============================================================================
+        call_command('dump_shipments_uuids', *args, **options)
         call_command('load_coverage', *args, **options)

@@ -27,7 +27,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        with open(self.PATH.joinpath(self.FILE_NAME), encoding='utf8') as file:
+        with self.PATH.joinpath(self.FILE_NAME).open(encoding='utf8') as file:
             reader = csv.DictReader(file, fieldnames=self.FIELD_NAMES)
             next(reader)
             Operator.objects.bulk_create(Operator(**_) for _ in reader)
