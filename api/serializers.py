@@ -40,7 +40,7 @@ class CoverageSerializer(serializers.ModelSerializer):
         ]
 
 
-class FormFieldsSerializer(serializers.Serializer):
+class FormMergeSerializer(serializers.Serializer):
 
     deal_number = serializers.CharField(max_length=16)
     insured = serializers.CharField(max_length=16)
