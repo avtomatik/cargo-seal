@@ -5,11 +5,21 @@ from procurement.models import Party
 from vessels.models import Document, Vessel
 
 
+class PartySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Party
+        fields = ['name']
+
+
 class PolicySerializer(serializers.ModelSerializer):
+
+    insured = PartySerializer()
+    provider = PartySerializer()
 
     class Meta:
         model = Policy
-        fields = '__all__'
+        fields = ['number', 'provider', 'insured', 'expiry']
 
 
 class CoverageSerializer(serializers.ModelSerializer):
@@ -53,13 +63,6 @@ class FormFieldsSerializer(serializers.Serializer):
     year_built = serializers.CharField(max_length=16)
     sum_insured = serializers.CharField(max_length=16)
     weight_metric = serializers.CharField(max_length=16)
-
-
-class PartySerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Party
-        fields = ['name']
 
 
 class VesselSerializer(serializers.ModelSerializer):
