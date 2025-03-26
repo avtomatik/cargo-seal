@@ -115,7 +115,7 @@ class FormMergeSerializer(serializers.Serializer):
 
     def get_date(self, obj):
         today = timezone.now().date()
-        return f'{min(obj.date, today):%d\xa0%B\xa0%Y}'
+        return self.format_date(min(obj.date, today))
 
     def get_sum_insured(self, obj):
         return f'{obj.ccy} {float(obj.sum_insured):,.2f}'
@@ -124,13 +124,16 @@ class FormMergeSerializer(serializers.Serializer):
         return f'{obj.weight_metric:,.3f}'
 
     def get_year_built(self, obj):
-        return f'{obj.vessel.built_on.year}'
+        return obj.vessel.built_on.year
 
     def get_bl_date(self, obj):
-        return f'{obj.date:%d\xa0%B\xa0%Y}'
+        return self.format_date(obj.date)
 
     def get_policy_date(self, obj):
-        return f'{obj.coverage.policy.inception:%d\xa0%B\xa0%Y}'
+        return self.format_date(obj.coverage.policy.inception)
+
+    def format_date(self, date):
+        return f'{date:%d\u00a0%B\u00a0%Y}' if date else None
 
 
 class VesselSerializer(serializers.ModelSerializer):
