@@ -61,8 +61,8 @@ class FormMergeSerializer(serializers.Serializer):
     )
     surveyor_loadport = serializers.CharField(source='surveyor_loadport.name')
     surveyor_disport = serializers.CharField(source='surveyor_disport.name')
-    basis_of_valuation = serializers.SerializerMethodField()
-    date = serializers.SerializerMethodField()
+    basis_of_valuation = serializers.SerializerMethodField(read_only=True)
+    date = serializers.SerializerMethodField(read_only=True)
     # bl_number = BillOfLadingSerializer(many=True)
 # =============================================================================
 #     TODO: Implement Handle to Generate the Following Output:
@@ -72,15 +72,15 @@ class FormMergeSerializer(serializers.Serializer):
 #             }
 #         ],
 # =============================================================================
-    bl_date = serializers.CharField(source='date')
+    bl_date = serializers.SerializerMethodField(read_only=True)
     loadport = serializers.CharField(max_length=16)
     disport = serializers.CharField(max_length=16)
     policy_number = serializers.CharField(source='coverage.policy.number')
-    policy_date = serializers.CharField(source='coverage.policy.inception')
+    policy_date = serializers.SerializerMethodField(read_only=True)
     subject_matter_insured = serializers.CharField(max_length=16)
     vessel = serializers.CharField(source='vessel.name')
     imo = serializers.CharField(source='vessel.imo')
-    year_built = serializers.SerializerMethodField()
+    year_built = serializers.SerializerMethodField(read_only=True)
     weight_metric = serializers.SerializerMethodField(read_only=True)
     sum_insured = serializers.SerializerMethodField(read_only=True)
 
@@ -115,7 +115,7 @@ class FormMergeSerializer(serializers.Serializer):
 
     def get_date(self, obj):
         today = timezone.now().date()
-        return min(obj.date, today)
+        return f'{min(obj.date, today):%d\xa0%B\xa0%Y}'
 
     def get_sum_insured(self, obj):
         return f'{obj.ccy} {float(obj.sum_insured):,.2f}'
@@ -125,6 +125,12 @@ class FormMergeSerializer(serializers.Serializer):
 
     def get_year_built(self, obj):
         return f'{obj.vessel.built_on.year}'
+
+    def get_bl_date(self, obj):
+        return f'{obj.date:%d\xa0%B\xa0%Y}'
+
+    def get_policy_date(self, obj):
+        return f'{obj.coverage.policy.inception:%d\xa0%B\xa0%Y}'
 
 
 class VesselSerializer(serializers.ModelSerializer):
