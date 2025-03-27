@@ -15,17 +15,10 @@ class BillOfLadingSerializer(serializers.Serializer):
         model = Shipment
 
 
-class PartySerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Party
-        fields = ['name']
-
-
 class PolicySerializer(serializers.ModelSerializer):
 
-    insured = PartySerializer()
-    provider = PartySerializer()
+    insured = serializers.CharField(source='insured.name')
+    provider = serializers.CharField(source='provider.name')
 
     class Meta:
         model = Policy
@@ -146,9 +139,16 @@ class VesselSerializer(serializers.ModelSerializer):
 class DocumentSerializer(serializers.ModelSerializer):
 
     vessel = VesselSerializer()
-    provider = PartySerializer()
+    provider = serializers.CharField(source='provider.name')
     is_valid = serializers.ReadOnlyField()
 
     class Meta:
         model = Document
-        fields = '__all__'
+        fields = [
+            'vessel',
+            'category',
+            'provider',
+            'number',
+            'date',
+            'is_valid'
+        ]
