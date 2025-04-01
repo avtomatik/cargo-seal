@@ -3,7 +3,6 @@ from rest_framework import serializers
 
 from coverage.models import Coverage, Policy
 from logistics.models import Shipment
-from procurement.models import Party
 from vessels.models import Document, Vessel
 
 
@@ -103,6 +102,10 @@ class FormMergeSerializer(serializers.Serializer):
             'sum_insured',
         ]
 
+    @staticmethod
+    def format_date(date):
+        return f'{date:%d\u00a0%B\u00a0%Y}' if date else None
+
     def get_basis_of_valuation(self, obj):
         return '100%'
 
@@ -124,9 +127,6 @@ class FormMergeSerializer(serializers.Serializer):
 
     def get_policy_date(self, obj):
         return self.format_date(obj.coverage.policy.inception)
-
-    def format_date(self, date):
-        return f'{date:%d\u00a0%B\u00a0%Y}' if date else None
 
 
 class VesselSerializer(serializers.ModelSerializer):
