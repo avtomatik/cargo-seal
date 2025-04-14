@@ -20,7 +20,7 @@ class IMOValidator:
             value, number = divmod(value, 10)
             numbers.append(number)
 
-        number = numbers.pop(0)
+        check_sum = sum(_ * number for _, number in enumerate(numbers[1:], 2))
 
-        if sum(x * y for x, y in zip(numbers, range(2, 8))) % 10 != number:
+        if check_sum % 10 != numbers[0]:
             raise ValidationError('Not A Valid IMO-Number.')
