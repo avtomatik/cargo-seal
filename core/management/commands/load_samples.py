@@ -11,19 +11,31 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-    """Class Responsible for Populating Database."""
+    """Command to orchestrate loading sample data into the database."""
+
+    help = 'Load all sample data into the database in the correct order.'
+
+    LOAD_COMMANDS = [
+        'load_locations',
+        'load_operators',
+        'load_parties',
+        'load_vessels',
+        'load_contracts',
+        'load_documents',
+        'load_policies',
+        'load_shipments',
+        # TODO: For Possible Refactoring
+        'dump_shipments_uuids',
+        'load_coverage',
+    ]
 
     def handle(self, *args, **options):
-        """Main Class Method."""
-
-        call_command('load_locations', *args, **options)
-        call_command('load_operators', *args, **options)
-        call_command('load_parties', *args, **options)
-        call_command('load_vessels', *args, **options)
-        call_command('load_contracts', *args, **options)
-        call_command('load_documents', *args, **options)
-        call_command('load_policies', *args, **options)
-        call_command('load_shipments', *args, **options)
-        # TODO: For Possible Refactoring
-        call_command('dump_shipments_uuids', *args, **options)
-        call_command('load_coverage', *args, **options)
+        """Call Each Command in the Predefined Order."""
+        for command_name in self.LOAD_COMMANDS:
+            self.stdout.write(
+                self.style.NOTICE(f'Executing `{command_name}`...')
+            )
+            call_command(command_name, *args, **options)
+            self.stdout.write(
+                self.style.SUCCESS(f'Successfully ran `{command_name}`')
+            )

@@ -5,34 +5,9 @@ Created on Fri Jan 17 17:47:51 2025
 @author: Aleksandr.Mikhailov
 """
 
-import csv
-
-from django.conf import settings
-from django.core.management.base import BaseCommand
-
-from procurement.models import Party
+from core.management.commands.generic_command import CSVImportCommand
+from marine_cargo.utils.loaders.party_loader import PartyLoader
 
 
-class Command(BaseCommand):
-
-    PATH_DATA = 'data'
-
-    FILE_NAME = 'procurement_party.csv'
-
-    FIELD_NAMES = ['name', 'address']
-
-    PATH = settings.BASE_DIR.joinpath(PATH_DATA)
-
-    help = 'Populates DB with Counterparties Data'
-
-    def handle(self, *args, **options):
-
-        with self.PATH.joinpath(self.FILE_NAME).open(encoding='utf8') as file:
-            reader = csv.DictReader(file, fieldnames=self.FIELD_NAMES)
-            next(reader)
-            Party.objects.bulk_create(Party(**_) for _ in reader)
-
-        self.stdout.write(
-            self.style.SUCCESS(
-                'Successfully Populated DB with Counterparties Data')
-        )
+class Command(CSVImportCommand):
+    loader_class = PartyLoader
