@@ -125,23 +125,14 @@ class CoverageViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def distillate_value(self, value):
-        if isinstance(value, str):
-            string = self.trim_string(value).title()
-            if string in ['Not Disclosed', 'Tba', 'Unknown']:
-                return
-            return string
-        return value
+        if not isinstance(value, str):
+            return value
 
-    def extract_workbook_data(self, file):
-        wb = load_workbook(file, read_only=True, keep_links=False)
-        sheet_names = wb.sheetnames
-        version = wb['declaration_form']['A1'].value
-        last_modified_by = wb.properties.lastModifiedBy
-        wb.close()
-        return sheet_names, version, last_modified_by
+        string = clean_string(value).title()
+        if string in {"Not Disclosed", "Tba", "Unknown"}:
+            return None
 
-    def trim_string(self, string: str, fill: str = ' ', char: str = r'\W') -> str:
-        return fill.join(filter(bool, re.split(char, string)))
+        return string
 
 
 class FormMergeViewSet(viewsets.ReadOnlyModelViewSet):
