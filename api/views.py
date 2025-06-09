@@ -42,9 +42,6 @@ class CoverageViewSet(viewsets.ModelViewSet):
     def push(self, request):
         """Push Declaration to Database Handler."""
         # =====================================================================
-        # curl -X POST -F "file=@path/to/file;type=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" http://localhost:8000/api/coverage/push/
-        # =====================================================================
-        # =====================================================================
         # TODO: Make It Clear
         # =====================================================================
         file = request.data.get('file')
