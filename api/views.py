@@ -1,20 +1,20 @@
-import json
-import re
-
-import pandas as pd
-from django.conf import settings
-from openpyxl import load_workbook
+from core.constants import SHEET_NAMES_EXPECTED
+from core.services import (ExcelReader, assign_index_by_row_count,
+                           clean_string, clean_summary_dataframe,
+                           standardize_dataset)
+from coverage.models import Coverage, Policy
+from logistics.models import Shipment
+from pydantic_models.extractors import FieldExtractor
+from pydantic_models.shipment_builders import ShipmentFactory
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
+from vessels.models import Document, Vessel
 
 from api.serializers import (CoverageSerializer, DocumentSerializer,
                              FormMergeSerializer, PolicySerializer,
                              VesselSerializer)
-from coverage.models import Coverage, Policy
-from logistics.models import Shipment
-from vessels.models import Document, Vessel
 
 
 class CoverageViewSet(viewsets.ModelViewSet):
@@ -46,90 +46,45 @@ class CoverageViewSet(viewsets.ModelViewSet):
         # =====================================================================
         file = request.data.get('file')
 
-        if file:
-            SHEET_NAMES_EXPECTED = ('declaration_form', 'bl_breakdown')
+        if not file:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
-            sheet_names, version, last_modified_by = self.extract_workbook_data(
-                file
+        reader = ExcelReader()
+        sheet_names, operator = reader.get_details(file)
+
+        if not SHEET_NAMES_EXPECTED.issubset(sheet_names):
+            print(
+                f'Missing required sheets in {file.name}. Found: {sheet_names}'
             )
-
-            df_frm = pd.read_excel(
-                file,
-                sheet_name=SHEET_NAMES_EXPECTED[0],
-                names=('headers', 'current'),
-                index_col=0,
-                skiprows=1,
-                skipfooter=2,
-            ).transpose()
-
-            df_frm.columns = map(
-                lambda _: self.trim_string(_, '_').lower(), df_frm.columns
-            )
-
-            df_bls = pd.read_excel(
-                file,
-                sheet_name=SHEET_NAMES_EXPECTED[-1]
-            ).dropna(axis=0)
-
-            df_bls.columns = map(
-                lambda _: self.trim_string(_, '_').lower(), df_bls.columns
-            )
-
-            df_bls['subject_matter_insured'] = df_bls['subject_matter_insured'].apply(
-                self.trim_string
-            ).apply(str.title)
-
-            df_bls = df_bls.sort_values(by='bl_date')
-
-            df_bls = df_bls.groupby('subject_matter_insured').agg({
-                'bl_number': 'count',
-                'bl_date': 'max',
-                'weight_mt_in_vacuum': 'sum',
-                'volume_bbl': 'sum',
-                'sum_insured_100_usd': 'sum',
-            })
-
-            # df_bls['deal_number'] = deal_number
-
-            # df_bls = df_bls.reset_index().set_index('deal_number')
-
-            print(df_bls)
-
-            with open(settings.BASE_DIR.joinpath('data').joinpath('columns.json')) as file:
-                COLUMNS = json.load(file)
-
-            if all(x == y for x, y in zip(df_frm.columns, COLUMNS[version]['expected'])):
-                df_frm.columns = COLUMNS[version]['fitted']
-
-            data_received = df_frm.loc['current'].to_dict()
-            data_received['operator'] = last_modified_by
-
-            data_received.pop('basis_of_valuation', None)
-            data_received.pop('subject_matter_insured', None)
-            data_received.pop('_', None)
-
-        # =====================================================================
-        # TODO: Validation
-        # =====================================================================
-            data = {}
-
-            for key, value in data_received.items():
-                value_distillated = self.distillate_value(value)
-                if value_distillated:
-                    data[key] = value_distillated
-
-            return Response(data, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
-    def distillate_value(self, value):
-        if not isinstance(value, str):
-            return value
-
-        string = clean_string(value).title()
-        if string in {"Not Disclosed", "Tba", "Unknown"}:
             return None
 
-        return string
+        try:
+            df_summary = (
+                reader.read_sheet(file, 'declaration_form')
+                .pipe(assign_index_by_row_count)
+                .pipe(clean_summary_dataframe)
+            )
+        except ValueError:
+            print(
+                f'Invalid declaration_form in {file.name} by {operator}')
+            return None
+
+        try:
+            df_details = (
+                reader.read_sheet(file, 'bl_breakdown')
+                .pipe(standardize_dataset)
+            )
+        except ValueError:
+            print(f'Invalid bl_breakdown in {file.name} by {operator}')
+            return None
+
+        shipment_factory = ShipmentFactory(
+            extractor=FieldExtractor(map_policies={})
+        )
+
+        shipment = shipment_factory.create(df_summary, df_details, operator)
+
+        return Response(shipment.model_dump_json(), status=status.HTTP_200_OK)
 
 
 class FormMergeViewSet(viewsets.ReadOnlyModelViewSet):
