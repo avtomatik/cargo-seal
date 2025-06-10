@@ -44,10 +44,10 @@ def clean_string(
     return fill.join(part for part in re.split(pattern, text.strip()) if part)
 
 
-def assign_index_by_row_count(df: pd.DataFrame) -> pd.DataFrame:
-
-    index_map = INDEX_MAP
-
+def assign_index_by_row_count(
+    df: pd.DataFrame,
+    index_map: dict = INDEX_MAP
+) -> pd.DataFrame:
     df.index = index_map.get(df.shape[0], DEFAULT_INDEX)
 
     return df
