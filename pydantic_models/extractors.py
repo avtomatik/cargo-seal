@@ -1,7 +1,4 @@
 class FieldExtractor:
-    def __init__(self, map_policies: dict[str, str]):
-        self.map_policies = map_policies
-
     def _sum_with_fallback(
         self,
         df,

@@ -1,6 +1,6 @@
 from core.constants import SHEET_NAMES_EXPECTED
 from core.services import (ExcelReader, assign_index_by_row_count,
-                           clean_string, clean_summary_dataframe,
+                           clean_summary_dataframe,
                            standardize_dataset)
 from coverage.models import Coverage, Policy
 from logistics.models import Shipment
@@ -78,9 +78,7 @@ class CoverageViewSet(viewsets.ModelViewSet):
             print(f'Invalid bl_breakdown in {file.name} by {operator}')
             return None
 
-        shipment_factory = ShipmentFactory(
-            extractor=FieldExtractor(map_policies={})
-        )
+        shipment_factory = ShipmentFactory(extractor=FieldExtractor())
 
         shipment = shipment_factory.create(df_summary, df_details, operator)
 
