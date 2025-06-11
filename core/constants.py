@@ -41,6 +41,8 @@ MAX_LENGTH_REF = 32
 
 MAX_LENGTH_CHAR = 64
 
+MAX_LENGTH_SLUG = 128
+
 MAX_LENGTH_TEXT = 256
 
 SHEET_NAMES_EXPECTED = {'declaration_form', 'bl_breakdown'}
