@@ -1,20 +1,15 @@
-from core.constants import SHEET_NAMES_EXPECTED
-from core.services import (ExcelReader, assign_index_by_row_count,
-                           clean_summary_dataframe,
-                           standardize_dataset)
-from coverage.models import Coverage, Policy
-from logistics.models import Shipment
-from pydantic_models.extractors import FieldExtractor
-from pydantic_models.shipment_builders import ShipmentFactory
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
-from vessels.models import Document, Vessel
 
 from api.serializers import (CoverageSerializer, DocumentSerializer,
                              FormMergeSerializer, PolicySerializer,
                              VesselSerializer)
+from core.services import process_shipment_file
+from coverage.models import Coverage, Policy
+from logistics.models import Shipment
+from vessels.models import Document, Vessel
 
 
 class CoverageViewSet(viewsets.ModelViewSet):
@@ -49,38 +44,13 @@ class CoverageViewSet(viewsets.ModelViewSet):
         if not file:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        reader = ExcelReader()
-        sheet_names, operator = reader.get_details(file)
+        shipment = process_shipment_file(file)
 
-        if not SHEET_NAMES_EXPECTED.issubset(sheet_names):
-            print(
-                f'Missing required sheets in {file.name}. Found: {sheet_names}'
+        if shipment is None:
+            return Response(
+                {'error': 'Failed to process shipment file.'},
+                status=status.HTTP_400_BAD_REQUEST
             )
-            return None
-
-        try:
-            df_summary = (
-                reader.read_sheet(file, 'declaration_form')
-                .pipe(assign_index_by_row_count)
-                .pipe(clean_summary_dataframe)
-            )
-        except ValueError:
-            print(
-                f'Invalid declaration_form in {file.name} by {operator}')
-            return None
-
-        try:
-            df_details = (
-                reader.read_sheet(file, 'bl_breakdown')
-                .pipe(standardize_dataset)
-            )
-        except ValueError:
-            print(f'Invalid bl_breakdown in {file.name} by {operator}')
-            return None
-
-        shipment_factory = ShipmentFactory(extractor=FieldExtractor())
-
-        shipment = shipment_factory.create(df_summary, df_details, operator)
 
         return Response(shipment.model_dump_json(), status=status.HTTP_200_OK)
 

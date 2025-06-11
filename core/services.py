@@ -7,6 +7,9 @@ import pandas as pd
 from openpyxl import load_workbook
 
 from core.constants import CYRILLIC_TO_LATIN, DEFAULT_INDEX, INDEX_MAP
+from pydantic_models.extractors import FieldExtractor
+from pydantic_models.shipment_builders import (SHEET_NAMES_EXPECTED,
+                                               ShipmentFactory)
 
 
 class ExcelReader:
@@ -182,3 +185,35 @@ class DateService:
     @staticmethod
     def resolve_eta(eta: datetime.date | None = None, fallback_days: int = 40) -> datetime.date:
         return eta or DateService.get_date(fallback_days)
+
+
+def process_shipment_file(file):
+    reader = ExcelReader()
+    sheet_names, operator = reader.get_details(file)
+
+    if not SHEET_NAMES_EXPECTED.issubset(sheet_names):
+        print(f'Missing required sheets in {file.name}. Found: {sheet_names}')
+        return None
+
+    try:
+        df_summary = (
+            reader.read_sheet(file, 'declaration_form')
+            .pipe(assign_index_by_row_count)
+            .pipe(clean_summary_dataframe)
+        )
+    except ValueError:
+        print(f'Invalid declaration_form in {file.name} by {operator}')
+        return None
+
+    try:
+        df_details = (
+            reader.read_sheet(file, 'bl_breakdown')
+            .pipe(standardize_dataset)
+        )
+    except ValueError:
+        print(f'Invalid bl_breakdown in {file.name} by {operator}')
+        return None
+
+    shipment_factory = ShipmentFactory(extractor=FieldExtractor())
+
+    return shipment_factory.create(df_summary, df_details, operator)
