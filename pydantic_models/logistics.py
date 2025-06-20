@@ -13,9 +13,9 @@ from pydantic_models.vessels import VesselModel
 class BillOfLading(BaseModel):
     number: Union[str, int]
     date: datetime.date
-    # grade: str
-    # quantity: float
-    # value: float
+    product: str
+    quantity: float
+    value: float
 
     def format_bl_number(self):
         num = int(self.number) if isinstance(
