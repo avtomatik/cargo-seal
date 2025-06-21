@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
+from app.constants import SHEET_NAMES_EXPECTED
 from app.services.excel_reader import ExcelReader
 
 from .. import crud, deps, schemas
@@ -28,7 +29,10 @@ def get_coverage(coverage_id: int, db: Session = Depends(deps.get_db)):
 
 
 @router.post('/', response_model=schemas.CoverageCreate)
-def create_coverage(data: schemas.CoverageCreate, db: Session = Depends(deps.get_db)):
+def create_coverage(
+    data: schemas.CoverageCreate,
+    db: Session = Depends(deps.get_db)
+):
     return crud.create_coverage(db, data)
 
 
@@ -53,6 +57,19 @@ async def push_coverage(request: Request, file: UploadFile = File(...)):
     reader = ExcelReader()
     try:
         sheet_names, operator = reader.get_details(tmp_path)
+
+        if not SHEET_NAMES_EXPECTED.issubset(sheet_names):
+            # =================================================================
+            # TODO: Move to HTML Template
+            # =================================================================
+            return HTMLResponse(
+                content=(
+                    f'<h1>Missing required sheets in {tmp_path.name}. '
+                    'Found: {sheet_names}</h1>.'
+                ),
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+
     except Exception:
         return HTMLResponse(
             content='<h1>Failed to process shipment file.</h1>',
