@@ -1,8 +1,3 @@
-Sure! Here's a clean and informative `README.md` for your FastAPI project (`cargo-seal`) that includes the `uvicorn` launch script and essential setup instructions:
-
----
-
-````markdown
 # 🚢 Cargo Seal — Marine Cargo Insurance Tracker
 
 A FastAPI-based backend for tracking marine cargo insurance, supporting features like vessel data services, bills of lading, policy coverage, and declaration processing from Excel files.
@@ -100,5 +95,3 @@ Returns: HTML with sheet names and operator, or JSON depending on the endpoint.
 ## 🛡 License
 
 MIT License. See [LICENSE](./LICENSE) for more info.
-
-```
