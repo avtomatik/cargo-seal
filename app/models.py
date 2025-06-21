@@ -43,7 +43,7 @@ class BillOfLading(Base):
     shipment_id = Column(Integer, ForeignKey('shipments.id'))
     number = Column(String(64), nullable=False)
     date = Column(Date, nullable=False)
-    grade = Column(String(128), nullable=False)
+    product = Column(String(128), nullable=False)
     quantity = Column(Float, nullable=False)
     value = Column(Float, nullable=False)
 
