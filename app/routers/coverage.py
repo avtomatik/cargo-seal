@@ -59,14 +59,13 @@ async def push_coverage(request: Request, file: UploadFile = File(...)):
         sheet_names, operator = reader.get_details(tmp_path)
 
         if not SHEET_NAMES_EXPECTED.issubset(sheet_names):
-            # =================================================================
-            # TODO: Move to HTML Template
-            # =================================================================
-            return HTMLResponse(
-                content=(
-                    f'<h1>Missing required sheets in {tmp_path.name}. '
-                    'Found: {sheet_names}</h1>.'
-                ),
+            return templates.TemplateResponse(
+                'missing_sheets.html',
+                {
+                    'request': request,
+                    'filename': file.filename,
+                    'sheet_names': sheet_names,
+                },
                 status_code=status.HTTP_400_BAD_REQUEST
             )
 
