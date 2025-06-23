@@ -1,3 +1,4 @@
+import traceback
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
@@ -8,6 +9,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.constants import SHEET_NAMES_EXPECTED
+from app.services.excel_processors import SummaryFromExcelProcessor
 from app.services.excel_reader import ExcelReader
 
 from .. import crud, deps, schemas
@@ -15,9 +17,9 @@ from .. import crud, deps, schemas
 router = APIRouter(prefix='/coverage', tags=['coverage'])
 
 
-@router.get('/', response_model=list[schemas.CoverageRead])
-def list_coverage(db: Session = Depends(deps.get_db)):
-    return crud.get_all_coverage(db)
+# @router.get('/', response_model=list[schemas.CoverageRead])
+# def list_coverage(db: Session = Depends(deps.get_db)):
+#     return crud.get_all_coverage(db)
 
 
 @router.get('/{coverage_id}', response_model=schemas.CoverageRead)
@@ -69,9 +71,17 @@ async def push_coverage(request: Request, file: UploadFile = File(...)):
                 status_code=status.HTTP_400_BAD_REQUEST
             )
 
-    except Exception:
+        summary_processor = SummaryFromExcelProcessor()
+
+        df_summary = (
+            reader.read_sheet(tmp_path, 'declaration_form')
+            .pipe(summary_processor.process)
+        )
+
+    except Exception as e:
+        traceback.print_exc()  # Print full traceback to console/log
         return HTMLResponse(
-            content='<h1>Failed to process shipment file.</h1>',
+            content=f'<h1>Failed to process shipment file.</h1><p>{e}</p>',
             status_code=status.HTTP_400_BAD_REQUEST
         )
 
