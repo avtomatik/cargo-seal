@@ -114,6 +114,17 @@ async def push_coverage(
             entity_data = schemas.EntityCreate(name=name, address=address)
             crud.upsert_entity_by_name(db, entity_data)
 
+        port_names = [
+            ('loadport_locality', 'loadport_country'),
+            ('disport_locality', 'disport_country'),
+        ]
+
+        for name_key, country_key in port_names:
+            name = summary[name_key]
+            country = summary[country_key]
+            port_data = schemas.PortCreate(name=name, country=country)
+            crud.upsert_port(db, port_data)
+
     except Exception as e:
         traceback.print_exc()
         return HTMLResponse(

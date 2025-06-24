@@ -1,6 +1,7 @@
 from enum import Enum as PyEnum
 
-from sqlalchemy import Column, Date, Enum, Float, ForeignKey, Integer, String
+from sqlalchemy import (Column, Date, Enum, Float, ForeignKey, Integer,
+                        Numeric, String)
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -16,6 +17,21 @@ class BillOfLading(Base):
     product = Column(String(128), nullable=False)
     quantity = Column(Float, nullable=False)
     value = Column(Float, nullable=False)
+
+
+class Coverage(Base):
+    __tablename__ = 'coverages'
+
+    id = Column(Integer, primary_key=True, index=True)
+    shipment_id = Column(Integer, ForeignKey('shipments.id'), nullable=False)
+    policy_id = Column(Integer, ForeignKey('policies.id'), nullable=True)
+
+    debit_note = Column(String(255), default='#')
+    ordinary_risks_rate = Column(Numeric(5, 4), default=0.0)
+    war_risks_rate = Column(Numeric(5, 4), default=0.0)
+    date = Column(Date)
+
+    shipment = relationship('Shipment', back_populates='coverages')
 
 
 class DocumentCategory(PyEnum):
@@ -92,6 +108,10 @@ class Port(Base):
         back_populates='disport'
     )
 
+    @property
+    def location(self):
+        return f'{self.name}, {self.country}'
+
 
 class Shipment(Base):
     __tablename__ = 'shipments'
@@ -126,6 +146,8 @@ class Shipment(Base):
     )
 
     operator = relationship('Operator', backref='shipments')
+
+    coverages = relationship('Coverage', back_populates='shipment')
 
 
 class Vessel(Base):

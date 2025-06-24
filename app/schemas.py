@@ -2,10 +2,30 @@ from datetime import date
 from decimal import Decimal
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import (BaseModel, Field, computed_field, field_validator,
+                      model_validator)
 from slugify import slugify
 
 from app.models import DocumentCategory
+
+
+class BillOfLadingBase(BaseModel):
+    number: str
+    date: date
+    product: str
+    quantity: float
+    value: float
+
+
+class BillOfLadingCreate(BillOfLadingBase):
+    shipment_id: int
+
+
+class BillOfLadingRead(BillOfLadingBase):
+    id: int
+
+    class Config:
+        from_attributes = True
 
 
 class CoverageBase(BaseModel):
@@ -16,16 +36,31 @@ class CoverageBase(BaseModel):
     war_risks_rate: Decimal = Decimal('0.0')
 
 
+class CoveragePushRequest(BaseModel):
+    policy_number: str
+    vessel_id: int
+    cargo_description: str
+    insured_value: float
+    issued_date: str
+
+
 class CoverageCreate(CoverageBase):
-    pass  # add validation for creation if needed
+    pass
 
 
-class CoverageRead(CoverageBase):
+class CoverageRead(BaseModel):
+    shipment: 'ShipmentRead'
+    ordinary_risks_rate: Decimal
+    war_risks_rate: Decimal
     date: date
-    premium: Decimal
+
+    @computed_field(return_type=Decimal)
+    @property
+    def premium(self) -> Decimal:
+        return self.shipment.sum_insured * (self.ordinary_risks_rate + self.war_risks_rate)
 
     class Config:
-        from_attributes = True  # Enables ORM model compatibility for response
+        from_attributes = True
 
 
 class DocumentBase(BaseModel):
@@ -79,23 +114,6 @@ class EntityRead(EntityBase):
         from_attributes = True
 
 
-class VesselBase(BaseModel):
-    name: str
-    imo: int
-    date_built: date
-
-
-class VesselCreate(VesselBase):
-    pass
-
-
-class Vessel(VesselBase):
-    id: int
-
-    class Config:
-        from_attributes = True
-
-
 class PolicyBase(BaseModel):
     number: str
     inception: date
@@ -117,19 +135,17 @@ class Policy(PolicyBase):
         from_attributes = True
 
 
-class BillOfLadingBase(BaseModel):
-    number: str
-    date: date
-    product: str
-    quantity: float
-    value: float
+class PortBase(BaseModel):
+    name: str = Field(..., max_length=64)
+    country: str = Field(..., max_length=64)
+    region: Optional[str] = Field(None, max_length=64)
 
 
-class BillOfLadingCreate(BillOfLadingBase):
-    shipment_id: int
+class PortCreate(PortBase):
+    pass
 
 
-class BillOfLading(BillOfLadingBase):
+class PortRead(PortBase):
     id: int
 
     class Config:
@@ -140,36 +156,49 @@ class ShipmentBase(BaseModel):
     deal_number: int
     insured: str
     vessel_id: int
-    loadport_locality: str
-    loadport_country: str
-    disport_locality: str
-    disport_country: str
+    loadport_id: int
+    disport_id: int
+    operator_id: int
     subject_matter_insured: str
     weight_metric: float
     sum_insured: float
-    ccy: Optional[str] = 'USD'
-    operator: str
+    ccy: Optional[str] = Field(default='USD', max_length=3)
     volume_bbl: Optional[float] = 0.0
     basis_of_valuation: Optional[float] = 0.0
-    disport_eta: date
+    disport_eta: Optional[date] = None
 
 
 class ShipmentCreate(ShipmentBase):
     pass
 
 
-class Shipment(ShipmentBase):
+class ShipmentRead(ShipmentBase):
     id: int
-    vessel: Vessel
-    bills_of_lading: List[BillOfLading] = []
 
     class Config:
         from_attributes = True
 
 
-class CoveragePushRequest(BaseModel):
-    policy_number: str
-    vessel_id: int
-    cargo_description: str
-    insured_value: float
-    issued_date: str  # or `datetime` if you parse it
+class ShipmentDetail(ShipmentRead):
+    vessel: 'VesselRead'
+    bills_of_lading: List['BillOfLadingRead'] = []
+
+    class Config:
+        from_attributes = True
+
+
+class VesselBase(BaseModel):
+    name: str
+    imo: int
+    date_built: date
+
+
+class VesselCreate(VesselBase):
+    pass
+
+
+class VesselRead(VesselBase):
+    id: int
+
+    class Config:
+        from_attributes = True

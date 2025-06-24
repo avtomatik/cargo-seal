@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -44,6 +45,24 @@ def upsert_entity_by_name(db: Session, entity: schemas.EntityCreate):
         return existing
     else:
         return create_entity(db, entity)
+
+
+def upsert_port(db: Session, port: schemas.PortCreate) -> models.Port:
+    stmt = select(models.Port).where(
+        models.Port.name == port.name,
+        models.Port.country == port.country
+    )
+    db_port = db.execute(stmt).scalar_one_or_none()
+
+    if db_port:
+        return db_port  # already exists
+
+    # Create new port
+    db_port = models.Port(name=port.name, country=port.country)
+    db.add(db_port)
+    db.commit()
+    db.refresh(db_port)
+    return db_port
 
 
 def get_vessel_by_imo(db: Session, imo: int):
