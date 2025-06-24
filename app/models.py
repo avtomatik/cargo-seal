@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String
+from enum import Enum as PyEnum
+
+from sqlalchemy import Column, Date, Enum, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -14,6 +16,30 @@ class BillOfLading(Base):
     product = Column(String(128), nullable=False)
     quantity = Column(Float, nullable=False)
     value = Column(Float, nullable=False)
+
+
+class DocumentCategory(PyEnum):
+    CLASS_CERTIFICATE = 'Class Certificate'
+    CLASS_REPORT = 'Class Report'
+    PI_POLICY = 'P I Policy'
+    Q88 = 'Q88'
+
+
+class Document(Base):
+    __tablename__ = 'documents'
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    filename = Column(String(255), nullable=False)
+    category = Column(Enum(DocumentCategory), nullable=False)
+
+    vessel_id = Column(Integer, ForeignKey('vessels.id'), nullable=False)
+    provider_id = Column(Integer, ForeignKey('entities.id'), nullable=True)
+    number = Column(String(64), nullable=True)
+    date = Column(Date, nullable=False)
+
+    vessel = relationship('Vessel', backref='documents')
+    provider = relationship('Entity', backref='documents')
 
 
 class Entity(Base):

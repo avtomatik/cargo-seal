@@ -2,7 +2,9 @@ from datetime import date
 from decimal import Decimal
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+
+from app.models import DocumentCategory
 
 
 class CoverageBase(BaseModel):
@@ -23,6 +25,28 @@ class CoverageRead(CoverageBase):
 
     class Config:
         from_attributes = True  # Enables ORM model compatibility for response
+
+
+class DocumentBase(BaseModel):
+    filename: str
+    category: DocumentCategory
+    vessel_id: int
+    provider_id: Optional[int] = None
+    number: Optional[str] = None
+    date: date
+
+
+class DocumentCreate(DocumentBase):
+    @model_validator(mode='after')
+    def validate_required_fields(cls, model):
+        if model.category != DocumentCategory.Q88:
+            if model.provider_id is None:
+                raise ValueError(
+                    'provider_id is required unless category is Q88'
+                )
+            if not model.number:
+                raise ValueError('number is required unless category is Q88')
+        return model
 
 
 class EntityBase(BaseModel):
