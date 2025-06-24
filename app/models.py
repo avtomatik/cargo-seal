@@ -4,6 +4,18 @@ from sqlalchemy.orm import relationship
 from .database import Base
 
 
+class BillOfLading(Base):
+    __tablename__ = 'bills_of_lading'
+
+    id = Column(Integer, primary_key=True, index=True)
+    shipment_id = Column(Integer, ForeignKey('shipments.id'))
+    number = Column(String(64), nullable=False)
+    date = Column(Date, nullable=False)
+    product = Column(String(128), nullable=False)
+    quantity = Column(Float, nullable=False)
+    value = Column(Float, nullable=False)
+
+
 class Entity(Base):
     __tablename__ = 'entities'
 
@@ -11,15 +23,6 @@ class Entity(Base):
     name = Column(String(255), nullable=False)
     slug = Column(String(128), index=True)
     address = Column(String(255), default='Unknown')
-
-
-class Vessel(Base):
-    __tablename__ = 'vessels'
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), nullable=False)
-    imo = Column(Integer, unique=True, nullable=False)
-    date_built = Column(Date, nullable=False)
 
 
 class Policy(Base):
@@ -36,16 +39,25 @@ class Policy(Base):
     insured = relationship('Entity', foreign_keys=[insured_id])
 
 
-class BillOfLading(Base):
-    __tablename__ = 'bills_of_lading'
+class Port(Base):
+    __tablename__ = 'ports'
 
     id = Column(Integer, primary_key=True, index=True)
-    shipment_id = Column(Integer, ForeignKey('shipments.id'))
-    number = Column(String(64), nullable=False)
-    date = Column(Date, nullable=False)
-    product = Column(String(128), nullable=False)
-    quantity = Column(Float, nullable=False)
-    value = Column(Float, nullable=False)
+    name = Column(String(64), nullable=False)
+    country = Column(String(64), nullable=False)
+    region = Column(String(64), nullable=True)
+
+    # Reverse relationship if needed
+    loadport_shipments = relationship(
+        'Shipment',
+        foreign_keys='Shipment.loadport_id',
+        back_populates='loadport'
+    )
+    disport_shipments = relationship(
+        'Shipment',
+        foreign_keys='Shipment.disport_id',
+        back_populates='disport'
+    )
 
 
 class Shipment(Base):
@@ -55,10 +67,8 @@ class Shipment(Base):
     deal_number = Column(Integer, unique=True, nullable=False)
     insured = Column(String(255), nullable=False)
     vessel_id = Column(Integer, ForeignKey('vessels.id'))
-    loadport_locality = Column(String(128), nullable=False)
-    loadport_country = Column(String(128), nullable=False)
-    disport_locality = Column(String(128), nullable=False)
-    disport_country = Column(String(128), nullable=False)
+    loadport_id = Column(Integer, ForeignKey('ports.id'), nullable=False)
+    disport_id = Column(Integer, ForeignKey('ports.id'), nullable=False)
     subject_matter_insured = Column(String(255), nullable=False)
     weight_metric = Column(Float, nullable=False)
     sum_insured = Column(Float, nullable=False)
@@ -70,3 +80,23 @@ class Shipment(Base):
 
     vessel = relationship('Vessel', backref='shipments')
     bills_of_lading = relationship('BillOfLading', backref='shipment')
+
+    loadport = relationship(
+        'Port',
+        foreign_keys=[loadport_id],
+        back_populates='loadport_shipments'
+    )
+    disport = relationship(
+        'Port',
+        foreign_keys=[disport_id],
+        back_populates='disport_shipments'
+    )
+
+
+class Vessel(Base):
+    __tablename__ = 'vessels'
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
+    imo = Column(Integer, unique=True, nullable=False)
+    date_built = Column(Date, nullable=False)
