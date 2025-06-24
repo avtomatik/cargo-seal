@@ -1,3 +1,4 @@
+import datetime
 import re
 from typing import Optional
 
@@ -12,6 +13,20 @@ def transliterate_to_latin(
     word: str, mapping: dict[str, str] = CYRILLIC_TO_LATIN
 ) -> str:
     return ''.join(mapping.get(char.lower(), char) for char in word)
+
+
+def parse_date(text: str) -> datetime.datetime:
+    formats = [
+        (r'(\D+) (\d{2})\, (\d{4})', '%b %d, %Y'),
+        (r'(\D+), (\d{2})\ (\d{4})', '%b, %d %Y'),
+        (r'(\d{2})\ (\D+), (\d{4})', '%d %B, %Y'),
+        (r'(\d{2}) (\D+) (\d{4})', '%d %B %Y')
+    ]
+
+    for pattern, format in formats:
+        match = re.search(pattern, text)
+        if match:
+            return datetime.datetime.strptime(match.group(), format)
 
 
 def regex_trim(value: str, pattern: str, group_name: str) -> Optional[str]:

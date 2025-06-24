@@ -133,5 +133,5 @@ class Vessel(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
-    imo = Column(Integer, unique=True, nullable=False)
+    imo = Column(Integer, unique=True, index=True, nullable=False)
     date_built = Column(Date, nullable=False)

@@ -12,6 +12,7 @@ from app.constants import SHEET_NAMES_EXPECTED
 from app.services.excel_processors import SummaryFromExcelProcessor
 from app.services.excel_reader import ExcelReader
 from app.utils.data_transform import standardize_dataset
+from app.utils.text import parse_date
 
 from .. import crud, deps, schemas
 
@@ -43,7 +44,11 @@ templates = Jinja2Templates(directory='templates')
 
 
 @router.post('/push', response_class=HTMLResponse)
-async def push_coverage(request: Request, file: UploadFile = File(...)):
+async def push_coverage(
+    request: Request,
+    file: UploadFile = File(...),
+    db: Session = Depends(deps.get_db)
+):
     """
     Push Declaration to Database Handler (HTML view)
     """
@@ -73,19 +78,31 @@ async def push_coverage(request: Request, file: UploadFile = File(...)):
             )
 
         summary_processor = SummaryFromExcelProcessor()
-
         df_summary = (
             reader.read_sheet(tmp_path, 'declaration_form')
             .pipe(summary_processor.process)
         )
-
         df_details = (
             reader.read_sheet(tmp_path, 'bl_breakdown')
             .pipe(standardize_dataset)
         )
 
+        summary = df_summary['current'].to_dict()
+
+        vessel_name = summary['vessel']
+        vessel_imo = summary['imo']
+        vessel_date_built = parse_date(summary['date_built']) if isinstance(
+            summary['date_built'], str) else summary['date_built']
+
+        vessel_in = schemas.VesselCreate(
+            name=vessel_name,
+            imo=vessel_imo,
+            date_built=vessel_date_built
+        )
+        vessel_db = crud.upsert_vessel(db, vessel=vessel_in)
+
     except Exception as e:
-        traceback.print_exc()  # Print full traceback to console/log
+        traceback.print_exc()
         return HTMLResponse(
             content=f'<h1>Failed to process shipment file.</h1><p>{e}</p>',
             status_code=status.HTTP_400_BAD_REQUEST
@@ -93,5 +110,6 @@ async def push_coverage(request: Request, file: UploadFile = File(...)):
 
     return templates.TemplateResponse(
         'shipment_result.html',
-        {'request': request, 'sheet_names': sheet_names, 'operator': operator}
+        {'request': request, 'sheet_names': sheet_names,
+            'operator': operator, 'vessel': vessel_db}
     )
