@@ -25,6 +25,14 @@ class Entity(Base):
     address = Column(String(255), default='Unknown')
 
 
+class Operator(Base):
+    __tablename__ = 'operators'
+
+    id = Column(Integer, primary_key=True, index=True)
+    first_name = Column(String(64), nullable=False)
+    last_name = Column(String(64), nullable=False)
+
+
 class Policy(Base):
     __tablename__ = 'policies'
 
@@ -47,7 +55,6 @@ class Port(Base):
     country = Column(String(64), nullable=False)
     region = Column(String(64), nullable=True)
 
-    # Reverse relationship if needed
     loadport_shipments = relationship(
         'Shipment',
         foreign_keys='Shipment.loadport_id',
@@ -69,11 +76,11 @@ class Shipment(Base):
     vessel_id = Column(Integer, ForeignKey('vessels.id'))
     loadport_id = Column(Integer, ForeignKey('ports.id'), nullable=False)
     disport_id = Column(Integer, ForeignKey('ports.id'), nullable=False)
+    operator_id = Column(Integer, ForeignKey('operators.id'), nullable=False)
     subject_matter_insured = Column(String(255), nullable=False)
     weight_metric = Column(Float, nullable=False)
     sum_insured = Column(Float, nullable=False)
-    ccy = Column(String(10), default='USD')
-    operator = Column(String(255), nullable=False)
+    ccy = Column(String(3), default='USD')
     volume_bbl = Column(Float, default=0.0)
     basis_of_valuation = Column(Float, default=0.0)
     disport_eta = Column(Date)
@@ -91,6 +98,8 @@ class Shipment(Base):
         foreign_keys=[disport_id],
         back_populates='disport_shipments'
     )
+
+    operator = relationship('Operator', backref='shipments')
 
 
 class Vessel(Base):
