@@ -1,6 +1,49 @@
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from . import models, schemas
+
+
+def get_entity_by_name(db: Session, name: str):
+    return db.query(models.Entity).filter(models.Entity.name == name).first()
+
+
+def get_entity(db: Session, entity_id: int):
+    return db.query(models.Entity).filter(models.Entity.id == entity_id).first()
+
+
+def get_entities(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Entity).offset(skip).limit(limit).all()
+
+
+def create_entity(db: Session, entity: schemas.EntityCreate):
+    entity_data = entity.model_dump()
+    db_entity = models.Entity(**entity_data)
+    db.add(db_entity)
+    try:
+        db.commit()
+        db.refresh(db_entity)
+        return db_entity
+    except IntegrityError:
+        db.rollback()
+        raise
+
+
+def upsert_entity_by_name(db: Session, entity: schemas.EntityCreate):
+    """
+    Either update an existing entity by name or create a new one.
+    """
+    existing = get_entity_by_name(db, entity.name)
+    entity_data = entity.model_dump()
+
+    if existing:
+        for key, value in entity_data.items():
+            setattr(existing, key, value)
+        db.commit()
+        db.refresh(existing)
+        return existing
+    else:
+        return create_entity(db, entity)
 
 
 def get_vessel_by_imo(db: Session, imo: int):

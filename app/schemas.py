@@ -2,7 +2,8 @@ from datetime import date
 from decimal import Decimal
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
+from slugify import slugify
 
 from app.models import DocumentCategory
 
@@ -50,16 +51,28 @@ class DocumentCreate(DocumentBase):
 
 
 class EntityBase(BaseModel):
-    name: str
-    slug: Optional[str] = None
-    address: Optional[str] = 'Unknown'
+    name: str = Field(..., max_length=255)
+    slug: Optional[str] = Field(None, max_length=128)
+    address: Optional[str] = Field(None, max_length=255)
+
+    class Config:
+        str_strip_whitespace = True
+        validate_assignment = True
 
 
 class EntityCreate(EntityBase):
-    pass
+    @field_validator('slug', mode='before')
+    @classmethod
+    def generate_slug(cls, v, info):
+        return v or slugify(info.data.get('name'))
+
+    @field_validator('address', mode='before')
+    @classmethod
+    def default_address(cls, v):
+        return v or 'Unknown'
 
 
-class Entity(EntityBase):
+class EntityRead(EntityBase):
     id: int
 
     class Config:
@@ -97,8 +110,8 @@ class PolicyCreate(PolicyBase):
 
 class Policy(PolicyBase):
     id: int
-    provider: Entity
-    insured: Entity
+    provider: EntityRead
+    insured: EntityRead
 
     class Config:
         from_attributes = True

@@ -101,6 +101,19 @@ async def push_coverage(
         )
         vessel_db = crud.upsert_vessel(db, vessel=vessel_in)
 
+        entity_names = [
+            ('insured', 'address'),
+            ('counterparty', 'beneficiary_address'),
+            ('surveyor_loadport', None),
+            ('surveyor_disport', None),
+        ]
+
+        for name_key, address_key in entity_names:
+            name = summary[name_key]
+            address = summary.get(address_key)
+            entity_data = schemas.EntityCreate(name=name, address=address)
+            crud.upsert_entity_by_name(db, entity_data)
+
     except Exception as e:
         traceback.print_exc()
         return HTMLResponse(
