@@ -47,6 +47,24 @@ def upsert_entity_by_name(db: Session, entity: schemas.EntityCreate):
         return create_entity(db, entity)
 
 
+def upsert_operator(db: Session, operator_data: schemas.OperatorCreate) -> models.Operator:
+    existing_operator = (
+        db.query(models.Operator)
+        .filter(
+            models.Operator.first_name == operator_data.first_name,
+            models.Operator.last_name == operator_data.last_name,
+        )
+        .first()
+    )
+
+    if not existing_operator:
+        new_operator = models.Operator(**operator_data.model_dump())
+        db.add(new_operator)
+        db.commit()
+        db.refresh(new_operator)
+        return new_operator
+
+
 def upsert_port(db: Session, port: schemas.PortCreate) -> models.Port:
     stmt = select(models.Port).where(
         models.Port.name == port.name,

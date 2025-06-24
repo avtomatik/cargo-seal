@@ -118,7 +118,7 @@ class Shipment(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     deal_number = Column(Integer, unique=True, nullable=False)
-    insured = Column(String(255), nullable=False)
+    insured_id = Column(Integer, ForeignKey('entities.id'), nullable=False)
     vessel_id = Column(Integer, ForeignKey('vessels.id'))
     loadport_id = Column(Integer, ForeignKey('ports.id'), nullable=False)
     disport_id = Column(Integer, ForeignKey('ports.id'), nullable=False)
@@ -131,6 +131,7 @@ class Shipment(Base):
     basis_of_valuation = Column(Float, default=0.0)
     disport_eta = Column(Date)
 
+    insured = relationship('Entity', backref='shipments_as_insured')
     vessel = relationship('Vessel', backref='shipments')
     bills_of_lading = relationship('BillOfLading', backref='shipment')
 

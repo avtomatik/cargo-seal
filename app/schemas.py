@@ -114,6 +114,33 @@ class EntityRead(EntityBase):
         from_attributes = True
 
 
+class OperatorBase(BaseModel):
+    first_name: str = Field(
+        ...,
+        max_length=64,
+        description="Operator's first name"
+    )
+    last_name: str = Field(
+        ...,
+        max_length=64,
+        description="Operator's last name"
+    )
+
+    class Config:
+        str_strip_whitespace = True
+        validate_assignment = True
+
+
+class OperatorCreate(OperatorBase):
+    pass
+
+
+class OperatorRead(OperatorBase):
+    id: int
+    first_name: str
+    last_name: str
+
+
 class PolicyBase(BaseModel):
     number: str
     inception: date
@@ -126,7 +153,7 @@ class PolicyCreate(PolicyBase):
     pass
 
 
-class Policy(PolicyBase):
+class PolicyRead(PolicyBase):
     id: int
     provider: EntityRead
     insured: EntityRead
@@ -154,7 +181,7 @@ class PortRead(PortBase):
 
 class ShipmentBase(BaseModel):
     deal_number: int
-    insured: str
+    insured_id: int
     vessel_id: int
     loadport_id: int
     disport_id: int

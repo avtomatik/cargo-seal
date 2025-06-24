@@ -125,6 +125,13 @@ async def push_coverage(
             port_data = schemas.PortCreate(name=name, country=country)
             crud.upsert_port(db, port_data)
 
+        first_name, last_name = operator.split()
+        operator_data = schemas.OperatorCreate(
+            first_name=first_name,
+            last_name=last_name
+        )
+        crud.upsert_operator(db, operator_data)
+
     except Exception as e:
         traceback.print_exc()
         return HTMLResponse(
