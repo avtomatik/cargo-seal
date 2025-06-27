@@ -13,7 +13,7 @@ class Normalizer:
 
     def run(self, df: pd.DataFrame) -> None:
         for row in self.rows_to_clean:
-            df.at[row, 'current'] = clean_string(df.at[row, 'current']).title()
+            df.at[row, 'current'] = clean_string(df.at[row, 'current'], ' ').title()
 
         for row in self.entity_trim_rows:
             df.at[row, 'current'] = regex_trim_entity(df.at[row, 'current'])
