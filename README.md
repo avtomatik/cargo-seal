@@ -74,7 +74,7 @@ cargo-seal/
 **Upload Shipment File:**
 
 ```http
-POST /api/coverage/push
+POST /api/shipments/push
 Content-Type: multipart/form-data
 Body:
   file: your_excel_file.xlsx

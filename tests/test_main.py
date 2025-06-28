@@ -13,7 +13,7 @@ def test_docs_available():
 
 
 def test_coverage_push_no_file():
-    response = client.post('/api/coverage/push/')
+    response = client.post('/api/shipments/push/')
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
@@ -26,5 +26,5 @@ def test_coverage_push_fake_file():
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
     }
-    response = client.post('/api/coverage/push/', files=files)
+    response = client.post('/api/shipments/push/', files=files)
     assert response.status_code in {HTTPStatus.OK, HTTPStatus.BAD_REQUEST}
