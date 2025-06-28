@@ -32,13 +32,15 @@ source venv/bin/activate  # on Windows: venv\Scripts\activate
 ### 3. Install Dependencies
 
 ```bash
-pip install -r requirements.txt
+pip install --upgrade pip --no-cache-dir
+pip install -r requirements.txt --no-cache-dir
 ```
 
 ### 4. Run the Server
 
 ```bash
 uvicorn app.main:app --reload
+# uvicorn app:main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 * The app will be live at: [http://127.0.0.1:8000](http://127.0.0.1:8000)
