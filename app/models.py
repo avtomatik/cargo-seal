@@ -11,12 +11,16 @@ class BillOfLading(Base):
     __tablename__ = 'bills_of_lading'
 
     id = Column(Integer, primary_key=True, index=True)
-    shipment_id = Column(Integer, ForeignKey('shipments.id'))
+    shipment_id = Column(Integer, ForeignKey('shipments.id'), nullable=False)
     number = Column(String(64), nullable=False)
     date = Column(Date, nullable=False)
     product = Column(String(128), nullable=False)
-    quantity = Column(Float, nullable=False)
+    quantity_mt = Column(Float, nullable=False)
+    quantity_bbl = Column(Float, nullable=True)
     value = Column(Float, nullable=False)
+    ccy = Column(String(3), default='USD', nullable=False)
+
+    shipment = relationship('Shipment', back_populates='bills_of_lading')
 
 
 class Coverage(Base):
@@ -25,6 +29,7 @@ class Coverage(Base):
     id = Column(Integer, primary_key=True, index=True)
     shipment_id = Column(Integer, ForeignKey('shipments.id'), nullable=False)
     policy_id = Column(Integer, ForeignKey('policies.id'), nullable=True)
+    basis_of_valuation = Column(Float, nullable=False)
 
     debit_note = Column(String(255), default='#')
     ordinary_risks_rate = Column(Numeric(5, 4), default=0.0)
@@ -32,6 +37,7 @@ class Coverage(Base):
     date = Column(Date)
 
     shipment = relationship('Shipment', back_populates='coverages')
+    policy = relationship('Policy', backref='coverages')
 
 
 class DocumentCategory(PyEnum):
@@ -123,17 +129,11 @@ class Shipment(Base):
     loadport_id = Column(Integer, ForeignKey('ports.id'), nullable=False)
     disport_id = Column(Integer, ForeignKey('ports.id'), nullable=False)
     operator_id = Column(Integer, ForeignKey('operators.id'), nullable=False)
-    subject_matter_insured = Column(String(255), nullable=False)
-    weight_metric = Column(Float, nullable=False)
-    sum_insured = Column(Float, nullable=False)
-    ccy = Column(String(3), default='USD')
-    volume_bbl = Column(Float, default=0.0)
-    basis_of_valuation = Column(Float, default=0.0)
-    disport_eta = Column(Date)
+    disport_eta = Column(Date, nullable=True)
 
     insured = relationship('Entity', backref='shipments_as_insured')
     vessel = relationship('Vessel', backref='shipments')
-    bills_of_lading = relationship('BillOfLading', backref='shipment')
+    bills_of_lading = relationship('BillOfLading', back_populates='shipment')
 
     loadport = relationship(
         'Port',
@@ -145,7 +145,6 @@ class Shipment(Base):
         foreign_keys=[disport_id],
         back_populates='disport_shipments'
     )
-
     operator = relationship('Operator', backref='shipments')
 
     coverages = relationship('Coverage', back_populates='shipment')

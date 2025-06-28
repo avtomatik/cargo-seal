@@ -19,9 +19,17 @@ from .. import crud, deps, schemas
 router = APIRouter(prefix='/coverage', tags=['coverage'])
 
 
-# @router.get('/', response_model=list[schemas.CoverageRead])
-# def list_coverage(db: Session = Depends(deps.get_db)):
-#     return crud.get_all_coverage(db)
+@router.get('/', response_model=list[schemas.CoverageRead])
+def list_coverage(db: Session = Depends(deps.get_db)):
+    return crud.get_all_coverage(db)
+
+
+@router.get('/shipments/{shipment_id}', response_model=schemas.ShipmentWithTotals)
+def read_shipment_with_totals(shipment_id: int, db: Session = Depends(deps.get_db)):
+    result = crud.get_shipment_with_totals(db, shipment_id)
+    if not result:
+        raise HTTPException(status_code=404, detail='Shipment not found')
+    return result
 
 
 @router.get('/{coverage_id}', response_model=schemas.CoverageRead)
@@ -87,6 +95,23 @@ async def push_coverage(
             .pipe(standardize_dataset)
         )
 
+        required_columns = [
+            'bl_number',
+            'bl_date',
+            'subject_matter_insured',
+            'weight_mt_in_vacuum',
+            'sum_insured_100_usd'
+        ]
+
+        missing_columns = [
+            col for col in required_columns if col not in df_details.columns
+        ]
+        if missing_columns:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Missing required columns in Excel sheet: {', '.join(missing_columns)}"
+            )
+
         summary = df_summary['current'].to_dict()
 
         vessel_name = summary['vessel']
@@ -112,7 +137,14 @@ async def push_coverage(
             name = summary[name_key]
             address = summary.get(address_key)
             entity_data = schemas.EntityCreate(name=name, address=address)
-            crud.upsert_entity_by_name(db, entity_data)
+
+            entity = crud.upsert_entity_by_name(db, entity_data)
+
+            if name_key == 'insured':
+                insured_id = entity.id
+
+        loadport_id = None
+        disport_id = None
 
         port_names = [
             ('loadport_locality', 'loadport_country'),
@@ -123,14 +155,55 @@ async def push_coverage(
             name = summary[name_key]
             country = summary[country_key]
             port_data = schemas.PortCreate(name=name, country=country)
-            crud.upsert_port(db, port_data)
+
+            port = crud.upsert_port(db, port_data)
+
+            if name_key == 'loadport_locality':
+                loadport_id = port.id
+            elif name_key == 'disport_locality':
+                disport_id = port.id
 
         first_name, last_name = operator.split()
         operator_data = schemas.OperatorCreate(
             first_name=first_name,
             last_name=last_name
         )
-        crud.upsert_operator(db, operator_data)
+        operator_obj = crud.get_or_create_operator(db, operator_data)
+
+        shipment_data = schemas.ShipmentCreate(
+            deal_number=summary['deal_number'],
+            insured_id=insured_id,
+            vessel_id=vessel_db.id,
+            loadport_id=loadport_id,
+            disport_id=disport_id,
+            operator_id=operator_obj.id,
+            disport_eta=None
+        )
+
+        shipment_obj = crud.create_shipment(db, shipment_data)
+
+        bill_of_lading_items = [
+            schemas.BillOfLadingCreate(
+                shipment_id=shipment_obj.id,
+                number=str(row['bl_number']),
+                date=row['bl_date'].date(),
+                product=row['subject_matter_insured'],
+                quantity_mt=row['weight_mt_in_vacuum'],
+                quantity_bbl=row.get('volume_bbl', 0.0),
+                value=row['sum_insured_100_usd'],
+                ccy=row.get('ccy', summary.get('ccy', 'USD'))
+            )
+            for _, row in df_details.iterrows()
+        ]
+
+        crud.bulk_create_bills(db, bill_of_lading_items)
+
+        coverage_data = schemas.CoverageCreate(
+            shipment_id=shipment_obj.id,
+            basis_of_valuation=summary['basis_of_valuation'],
+            policy_id=None
+        )
+        crud.create_coverage(db, coverage_data)
 
     except Exception as e:
         traceback.print_exc()
@@ -141,6 +214,10 @@ async def push_coverage(
 
     return templates.TemplateResponse(
         'shipment_result.html',
-        {'request': request, 'sheet_names': sheet_names,
-            'operator': operator, 'vessel': vessel_db}
+        {
+            'request': request,
+            'sheet_names': sheet_names,
+            'operator': operator,
+            'vessel': vessel_db
+        }
     )

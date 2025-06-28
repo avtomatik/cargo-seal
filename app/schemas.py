@@ -1,4 +1,4 @@
-from datetime import date
+import datetime
 from decimal import Decimal
 from typing import List, Optional
 
@@ -10,15 +10,21 @@ from app.models import DocumentCategory
 
 
 class BillOfLadingBase(BaseModel):
-    number: str
-    date: date
-    product: str
-    quantity: float
-    value: float
+    shipment_id: int
+    number: str = Field(max_length=64)
+    date: datetime.date
+    product: str = Field(max_length=128)
+    quantity_mt: float = Field(gt=0)
+    quantity_bbl: Optional[float] = Field(default=None, ge=0)
+    value: float = Field(gt=0)
+    ccy: str = Field(default='USD', min_length=3, max_length=3)
+
+    class Config:
+        from_attributes = True
 
 
 class BillOfLadingCreate(BillOfLadingBase):
-    shipment_id: int
+    pass
 
 
 class BillOfLadingRead(BillOfLadingBase):
@@ -34,25 +40,18 @@ class CoverageBase(BaseModel):
     debit_note: str = Field(default='#', max_length=255)
     ordinary_risks_rate: Decimal = Decimal('0.0')
     war_risks_rate: Decimal = Decimal('0.0')
-
-
-class CoveragePushRequest(BaseModel):
-    policy_number: str
-    vessel_id: int
-    cargo_description: str
-    insured_value: float
-    issued_date: str
+    basis_of_valuation: Optional[float] = 0.0
 
 
 class CoverageCreate(CoverageBase):
-    pass
+    date: datetime.date = Field(default_factory=datetime.date.today)
 
 
 class CoverageRead(BaseModel):
     shipment: 'ShipmentRead'
     ordinary_risks_rate: Decimal
     war_risks_rate: Decimal
-    date: date
+    date: datetime.date
 
     @computed_field(return_type=Decimal)
     @property
@@ -69,7 +68,7 @@ class DocumentBase(BaseModel):
     vessel_id: int
     provider_id: Optional[int] = None
     number: Optional[str] = None
-    date: date
+    date: datetime.date
 
 
 class DocumentCreate(DocumentBase):
@@ -143,8 +142,8 @@ class OperatorRead(OperatorBase):
 
 class PolicyBase(BaseModel):
     number: str
-    inception: date
-    expiry: Optional[date]
+    inception: datetime.date
+    expiry: Optional[datetime.date]
     provider_id: int
     insured_id: int
 
@@ -186,13 +185,10 @@ class ShipmentBase(BaseModel):
     loadport_id: int
     disport_id: int
     operator_id: int
-    subject_matter_insured: str
-    weight_metric: float
-    sum_insured: float
-    ccy: Optional[str] = Field(default='USD', max_length=3)
-    volume_bbl: Optional[float] = 0.0
-    basis_of_valuation: Optional[float] = 0.0
-    disport_eta: Optional[date] = None
+    disport_eta: Optional[datetime.date] = None
+
+    class Config:
+        from_attributes = True
 
 
 class ShipmentCreate(ShipmentBase):
@@ -201,14 +197,35 @@ class ShipmentCreate(ShipmentBase):
 
 class ShipmentRead(ShipmentBase):
     id: int
+    ccy: Optional[str] = 'USD'
+    bills_of_lading: List[BillOfLadingRead]
+
+    @computed_field
+    @property
+    def total_weight_mt(self) -> float:
+        return sum(b.quantity_mt for b in self.bills_of_lading)
+
+    @computed_field
+    @property
+    def total_volume_bbl(self) -> float:
+        return sum(b.quantity_bbl for b in self.bills_of_lading)
+
+    @computed_field
+    @property
+    def total_value_usd(self) -> float:
+        return sum(b.value for b in self.bills_of_lading)
 
     class Config:
         from_attributes = True
 
 
-class ShipmentDetail(ShipmentRead):
-    vessel: 'VesselRead'
-    bills_of_lading: List['BillOfLadingRead'] = []
+class ShipmentWithTotals(BaseModel):
+    id: int
+    deal_number: int
+    disport_eta: Optional[datetime.date]
+    total_weight_mt: float
+    total_volume_bbl: float
+    total_value_usd: float
 
     class Config:
         from_attributes = True
@@ -217,7 +234,7 @@ class ShipmentDetail(ShipmentRead):
 class VesselBase(BaseModel):
     name: str
     imo: int
-    date_built: date
+    date_built: datetime.date
 
 
 class VesselCreate(VesselBase):
