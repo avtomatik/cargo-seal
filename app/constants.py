@@ -12,6 +12,8 @@ CYRILLIC_TO_LATIN = {
 
 SHEET_NAMES_EXPECTED = {'declaration_form', 'bl_breakdown'}
 
+CLASSES_AGREED = {'DNV', 'ABS', 'Lloyds', 'Bureau Veritas'}
+
 COL_FILE_NAME = 'columns.yaml'
 
 COL_FILE_PATH = Path(__file__).resolve().parents[1].joinpath(

@@ -178,7 +178,8 @@ def process_declaration_file(file: UploadFile, db: Session) -> tuple:
     try:
         tmp_path = save_temp_file(file)
         sheet_names, operator_name, df_details, summary = parse_summary_and_details(
-            tmp_path)
+            tmp_path
+        )
 
         vessel = create_vessel(db, summary)
         insured_id = create_entities(db, summary)
