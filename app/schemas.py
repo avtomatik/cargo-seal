@@ -56,7 +56,9 @@ class CoverageRead(BaseModel):
     @computed_field(return_type=Decimal)
     @property
     def premium(self) -> Decimal:
-        return self.shipment.sum_insured * (self.ordinary_risks_rate + self.war_risks_rate)
+        return Decimal(str(self.shipment.total_value_usd)) * (
+            self.ordinary_risks_rate + self.war_risks_rate
+        )
 
     class Config:
         from_attributes = True
