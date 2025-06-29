@@ -11,6 +11,12 @@ def bulk_create_bills(db: Session, bills: list[schemas.BillOfLadingCreate]) -> N
     db.commit()
 
 
+def get_coverage(db: Session, coverage_id: int):
+    return db.query(models.Coverage).filter(
+        models.Coverage.id == coverage_id
+    ).first()
+
+
 def get_all_coverage(db: Session):
     return db.query(models.Coverage).all()
 

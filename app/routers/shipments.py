@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from app import deps
+from app import crud, deps, schemas
 from app.services import declaration as declaration_service
 
 router = APIRouter(prefix='/shipments', tags=['shipments'])
@@ -40,3 +40,17 @@ async def push_shipment(
             'vessel': vessel
         }
     )
+
+
+@router.get('/{shipment_id}', response_model=schemas.ShipmentWithTotals)
+def read_shipment_with_totals(
+    shipment_id: int,
+    db: Session = Depends(deps.get_db)
+):
+    result = crud.get_shipment_with_totals(db, shipment_id)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Shipment not found'
+        )
+    return result
