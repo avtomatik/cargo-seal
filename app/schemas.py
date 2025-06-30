@@ -119,12 +119,12 @@ class OperatorBase(BaseModel):
     first_name: str = Field(
         ...,
         max_length=64,
-        description="Operator's first name"
+        description="Operator's First Name"
     )
     last_name: str = Field(
         ...,
         max_length=64,
-        description="Operator's last name"
+        description="Operator's Last Name"
     )
 
     class Config:

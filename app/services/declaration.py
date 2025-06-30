@@ -119,14 +119,18 @@ def create_entities(db, summary):
         ('surveyor_loadport', None),
         ('surveyor_disport', None),
     ]:
-        name = summary[name_key]
-        address = summary.get(address_key)
+        name = summary.get(name_key)
+        if not name:
+            continue
+
+        address = summary.get(address_key) if address_key else None
         entity = crud.upsert_entity_by_name(
             db,
             EntityCreate(name=name, address=address)
         )
         if name_key == 'insured':
             insured_id = entity.id
+
     return insured_id
 
 
@@ -181,9 +185,9 @@ def process_declaration_file(file: UploadFile, db: Session) -> tuple:
             tmp_path
         )
 
-        vessel = create_vessel(db, summary)
         insured_id = create_entities(db, summary)
         port_ids = create_ports(db, summary)
+        vessel = create_vessel(db, summary)
         operator = create_operator(db, operator_name)
         shipment = create_shipment(
             db,
@@ -194,7 +198,7 @@ def process_declaration_file(file: UploadFile, db: Session) -> tuple:
             operator.id
         )
         create_bills_of_lading(db, df_details, shipment.id)
-        create_coverage(db, shipment.id, summary['basis_of_valuation'])
+        create_coverage(db, shipment.id, summary.get('basis_of_valuation'))
 
         return sheet_names, operator_name, vessel
 
