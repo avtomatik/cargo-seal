@@ -14,12 +14,14 @@ SHEET_NAMES_EXPECTED = {'declaration_form', 'bl_breakdown'}
 
 CLASSES_AGREED = {'DNV', 'ABS', 'Lloyds', 'Bureau Veritas'}
 
-COL_FILE_NAME = 'columns.yaml'
+BASE_DIR = Path(__file__).resolve().parents[1]
 
-COL_FILE_PATH = Path(__file__).resolve().parents[1].joinpath(
-    'config').joinpath(COL_FILE_NAME)
+FIXTURE_DIR = BASE_DIR / 'app' / 'fixtures'
+
+COL_FILE_NAME = 'columns.yaml'
 
 GEN_FILE_NAME = 'config.yaml'
 
-GEN_FILE_PATH = Path(__file__).resolve().parents[1].joinpath(
-    'config').joinpath(GEN_FILE_NAME)
+COL_FILE_PATH = BASE_DIR / 'config' / COL_FILE_NAME
+
+GEN_FILE_PATH = BASE_DIR / 'config' / GEN_FILE_NAME

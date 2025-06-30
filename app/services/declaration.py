@@ -185,9 +185,9 @@ def process_declaration_file(file: UploadFile, db: Session) -> tuple:
             tmp_path
         )
 
-        insured_id = create_entities(db, summary)
         port_ids = create_ports(db, summary)
         vessel = create_vessel(db, summary)
+        insured_id = create_entities(db, summary)
         operator = create_operator(db, operator_name)
         shipment = create_shipment(
             db,
