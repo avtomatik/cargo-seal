@@ -97,6 +97,18 @@ class DocumentCreate(DocumentBase):
         return model
 
 
+class DocumentRead(DocumentBase):
+    id: int
+
+    @computed_field
+    @property
+    def is_valid(self) -> bool:
+        return self.date >= datetime.now().date()
+
+    class Config:
+        from_attributes = True
+
+
 class EntityBase(BaseModel):
     name: str = Field(..., max_length=255)
     slug: Optional[str] = Field(None, max_length=128)
