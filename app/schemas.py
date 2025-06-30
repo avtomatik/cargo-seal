@@ -30,6 +30,17 @@ class BillOfLadingCreate(BillOfLadingBase):
 class BillOfLadingRead(BillOfLadingBase):
     id: int
 
+    def format_bl_number(self) -> dict:
+        num = int(self.number) if isinstance(
+            self.number, (int, float)) else self.number
+        return {
+            'bl_number': f'Bill of Lading #\xa0{num} dated {self.date:%d\xa0%B\xa0%Y}'
+        }
+
+    @classmethod
+    def format_bl_list(cls, bills_of_lading: List['BillOfLadingRead']) -> List[dict]:
+        return [bill.format_bl_number() for bill in bills_of_lading]
+
     class Config:
         from_attributes = True
 
