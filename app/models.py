@@ -43,6 +43,7 @@ class Coverage(Base):
 class DocumentCategory(PyEnum):
     CLASS_CERTIFICATE = 'Class Certificate'
     CLASS_REPORT = 'Class Report'
+    HM_POLICY = 'H M Policy'
     PI_POLICY = 'P I Policy'
     Q88 = 'Q88'
 

@@ -12,7 +12,7 @@ db: Session = SessionLocal()
 
 
 def load_model_data(model, file_name):
-    with open(f'{FIXTURE_DIR}/{file_name}', 'r') as f:
+    with (FIXTURE_DIR / file_name).open(encoding='utf-8') as f:
         items = json.load(f)
 
     for item in items:
