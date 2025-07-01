@@ -1,19 +1,30 @@
 import pandas as pd
 
-from app.utils.text import clean_string, transliterate_to_latin
+from app.utils.text import RegexStringCleaner, transliterate_to_latin
 
 
-def standardize_column_names(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Standardizes the column names by applying a series of transformations:
-    1. Trimming whitespaces with a custom trim function.
-    2. Transliteration of non-ASCII characters.
-    3. Converting the names to lowercase.
-    """
-    def clean_column_name(col: str) -> str:
-        return str.lower(transliterate_to_latin(clean_string(col, fill='_')))
+class ColumnTransformer:
+    def __init__(
+        self,
+        cleaner: RegexStringCleaner,
+        transliterate_func,
+        lower: bool = True
+    ):
+        self.cleaner = cleaner
+        self.transliterate = transliterate_func
+        self.lower = lower
 
-    df.columns = [clean_column_name(col) for col in df.columns]
+    def transform(self, name: str) -> str:
+        result = self.cleaner.clean(name)
+        result = self.transliterate(result)
+        return result.lower() if self.lower else result
+
+
+def standardize_column_names(
+    df: pd.DataFrame,
+    transformer: ColumnTransformer
+) -> pd.DataFrame:
+    df.columns = [transformer.transform(col) for col in df.columns]
     return df
 
 
@@ -28,4 +39,10 @@ def standardize_dataset(df: pd.DataFrame) -> pd.DataFrame:
     """
     Standardizes the dataset by cleaning column names and dropping empty rows and columns.
     """
-    return df.pipe(standardize_column_names).pipe(drop_empty_rows_and_columns)
+    cleaner = RegexStringCleaner(fill='_')
+    transformer = ColumnTransformer(cleaner, transliterate_to_latin)
+    return (
+        df
+        .pipe(standardize_column_names, transformer)
+        .pipe(drop_empty_rows_and_columns)
+    )

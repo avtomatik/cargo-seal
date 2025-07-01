@@ -5,6 +5,18 @@ from typing import Optional
 from app.constants import CYRILLIC_TO_LATIN
 
 
+class RegexStringCleaner:
+    def __init__(self, fill: str = '_'):
+        self.fill = fill
+        self.pattern = rf'[\W{re.escape(fill)}]+'
+
+    def clean(self, text: str) -> str:
+        parts = [
+            part for part in re.split(self.pattern, text.strip()) if part
+        ]
+        return self.fill.join(parts).strip(self.fill)
+
+
 def clean_string(text: str, fill: str = '_', pattern: str = None) -> str:
     # If no pattern provided, generate one that splits on non-word chars and the fill itself
     if pattern is None:
