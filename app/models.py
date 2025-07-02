@@ -124,7 +124,7 @@ class Shipment(Base):
     __tablename__ = 'shipments'
 
     id = Column(Integer, primary_key=True, index=True)
-    deal_number = Column(Integer, unique=True, nullable=False)
+    deal_number = Column(Integer, nullable=False)
     insured_id = Column(Integer, ForeignKey('entities.id'), nullable=False)
     vessel_id = Column(Integer, ForeignKey('vessels.id'))
     loadport_id = Column(Integer, ForeignKey('ports.id'), nullable=False)

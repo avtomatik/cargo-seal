@@ -14,9 +14,9 @@ class BillOfLadingBase(BaseModel):
     number: str = Field(max_length=64)
     date: datetime.date
     product: str = Field(max_length=128)
-    quantity_mt: float = Field(gt=0)
+    quantity_mt: float
     quantity_bbl: Optional[float] = Field(default=None, ge=0)
-    value: float = Field(gt=0)
+    value: float
     ccy: str = Field(default='USD', min_length=3, max_length=3)
 
     class Config:
@@ -60,6 +60,7 @@ class CoverageCreate(CoverageBase):
 
 class CoverageRead(BaseModel):
     shipment: 'ShipmentRead'
+    policy: Optional['PolicyRead'] = None
     ordinary_risks_rate: Decimal
     war_risks_rate: Decimal
     date: datetime.date
@@ -228,17 +229,17 @@ class ShipmentRead(ShipmentBase):
     @computed_field
     @property
     def total_weight_mt(self) -> float:
-        return sum(b.quantity_mt for b in self.bills_of_lading)
+        return sum((b.quantity_mt or 0.0) for b in self.bills_of_lading)
 
     @computed_field
     @property
     def total_volume_bbl(self) -> float:
-        return sum(b.quantity_bbl for b in self.bills_of_lading)
+        return sum((b.quantity_bbl or 0.0) for b in self.bills_of_lading)
 
     @computed_field
     @property
     def total_value_usd(self) -> float:
-        return sum(b.value for b in self.bills_of_lading)
+        return sum((b.value or 0.0) for b in self.bills_of_lading)
 
     class Config:
         from_attributes = True
