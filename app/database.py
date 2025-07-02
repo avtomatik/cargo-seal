@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 # ⚙️ DATABASE URL FORMAT:
 # For PostgreSQL: 'postgresql://user:password@localhost/dbname'
-DATABASE_URL = 'sqlite:///./test.db'
+DATABASE_URL = 'sqlite:///./cargo_seal.sqlite3'
 
 # If using SQLite, this helps avoid threading issues
 connect_args = {'check_same_thread': False} if 'sqlite' in DATABASE_URL else {}
