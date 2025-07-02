@@ -1,18 +1,43 @@
+"""
+Database configuration module for the FastAPI project.
+
+Supports PostgreSQL and SQLite. Adjust the DATABASE_URL as needed.
+"""
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# ⚙️ DATABASE URL FORMAT:
+# =============================================================================
+# Database Connection Configuration
+# =============================================================================
+
+# Example:
 # For PostgreSQL: 'postgresql://user:password@localhost/dbname'
+# For SQLite: 'sqlite:///./cargo_seal.sqlite3'
 DATABASE_URL = 'sqlite:///./cargo_seal.sqlite3'
 
-# If using SQLite, this helps avoid threading issues
-connect_args = {'check_same_thread': False} if 'sqlite' in DATABASE_URL else {}
+# Additional arguments for SQLite to prevent threading issues
+SQLITE_CONNECT_ARGS = {'check_same_thread': False}
+connect_args = SQLITE_CONNECT_ARGS if DATABASE_URL.startswith('sqlite') else {}
 
-# 🚀 SQLAlchemy Engine & Session
+# =============================================================================
+# SQLAlchemy Engine and Session
+# =============================================================================
+
+# Create the SQLAlchemy engine
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Create a configured session class
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
 
-# 🧱 Base class for models
+# =============================================================================
+# Base Model Declaration
+# =============================================================================
+
+# Base class for all SQLAlchemy models
 Base = declarative_base()
