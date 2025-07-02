@@ -18,7 +18,6 @@ class RegexStringCleaner:
 
 
 def clean_string(text: str, fill: str = '_', pattern: str = None) -> str:
-    # If no pattern provided, generate one that splits on non-word chars and the fill itself
     if pattern is None:
         # Escape fill in case it's a special character like "." or "+"
         escaped_fill = re.escape(fill)

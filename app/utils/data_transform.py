@@ -37,7 +37,8 @@ def drop_empty_rows_and_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 def standardize_dataset(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Standardizes the dataset by cleaning column names and dropping empty rows and columns.
+    Standardizes the dataset by cleaning column names and dropping empty
+    rows and columns.
     """
     cleaner = RegexStringCleaner(fill='_')
     transformer = ColumnTransformer(cleaner, transliterate_to_latin)

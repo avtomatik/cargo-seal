@@ -5,7 +5,10 @@ from sqlalchemy.orm import Session
 from . import models, schemas
 
 
-def bulk_create_bills(db: Session, bills: list[schemas.BillOfLadingCreate]) -> None:
+def bulk_create_bills(
+    db: Session,
+    bills: list[schemas.BillOfLadingCreate]
+) -> None:
     bill_models = [models.BillOfLading(**bill.model_dump()) for bill in bills]
     db.bulk_save_objects(bill_models)
     db.commit()
@@ -21,7 +24,10 @@ def get_all_coverage(db: Session):
     return db.query(models.Coverage).all()
 
 
-def create_coverage(db: Session, coverage_data: schemas.CoverageCreate) -> models.Coverage:
+def create_coverage(
+    db: Session,
+    coverage_data: schemas.CoverageCreate
+) -> models.Coverage:
     new_coverage = models.Coverage(**coverage_data.model_dump())
     db.add(new_coverage)
     db.commit()
@@ -34,7 +40,12 @@ def get_entity_by_name(db: Session, name: str):
 
 
 def get_entity(db: Session, entity_id: int):
-    return db.query(models.Entity).filter(models.Entity.id == entity_id).first()
+    return (
+        db
+        .query(models.Entity)
+        .filter(models.Entity.id == entity_id)
+        .first()
+    )
 
 
 def get_entities(db: Session, skip: int = 0, limit: int = 100):
@@ -71,7 +82,10 @@ def upsert_entity_by_name(db: Session, entity: schemas.EntityCreate):
         return create_entity(db, entity)
 
 
-def get_or_create_operator(db: Session, operator_data: schemas.OperatorCreate) -> models.Operator:
+def get_or_create_operator(
+    db: Session,
+    operator_data: schemas.OperatorCreate
+) -> models.Operator:
     operator = (
         db.query(models.Operator)
         .filter(
@@ -109,7 +123,10 @@ def upsert_port(db: Session, port: schemas.PortCreate) -> models.Port:
     return db_port
 
 
-def create_shipment(db: Session, shipment_data: schemas.ShipmentCreate) -> models.Shipment:
+def create_shipment(
+    db: Session,
+    shipment_data: schemas.ShipmentCreate
+) -> models.Shipment:
     shipment = models.Shipment(**shipment_data.model_dump())
     db.add(shipment)
     db.commit()
@@ -117,7 +134,10 @@ def create_shipment(db: Session, shipment_data: schemas.ShipmentCreate) -> model
     return shipment
 
 
-def upsert_shipment(db: Session, shipment_data: schemas.ShipmentCreate) -> models.Shipment:
+def upsert_shipment(
+    db: Session,
+    shipment_data: schemas.ShipmentCreate
+) -> models.Shipment:
     existing = db.query(models.Shipment).filter_by(
         deal_number=shipment_data.deal_number).first()
 
@@ -136,7 +156,12 @@ def upsert_shipment(db: Session, shipment_data: schemas.ShipmentCreate) -> model
 
 
 def get_vessel_by_imo(db: Session, imo: int):
-    return db.query(models.Vessel).filter(models.Vessel.imo == imo).one_or_none()
+    return (
+        db
+        .query(models.Vessel)
+        .filter(models.Vessel.imo == imo)
+        .one_or_none()
+    )
 
 
 def upsert_vessel(db: Session, vessel: schemas.VesselCreate):
@@ -164,14 +189,23 @@ def get_shipment_with_totals(db: Session, shipment_id: int):
             models.Shipment.id,
             models.Shipment.deal_number,
             models.Shipment.disport_eta,
-            func.coalesce(func.sum(models.BillOfLading.quantity_mt),
-                          0.0).label('total_weight_mt'),
-            func.coalesce(func.sum(models.BillOfLading.quantity_bbl), 0.0).label(
-                'total_volume_bbl'),
-            func.coalesce(func.sum(models.BillOfLading.value),
-                          0.0).label('total_value_usd'),
+            func.coalesce(
+                func.sum(models.BillOfLading.quantity_mt),
+                0.0
+            ).label('total_weight_mt'),
+            func.coalesce(
+                func.sum(models.BillOfLading.quantity_bbl),
+                0.0
+            ).label('total_volume_bbl'),
+            func.coalesce(
+                func.sum(models.BillOfLading.value),
+                0.0
+            ).label('total_value_usd'),
         )
-        .join(models.BillOfLading, models.BillOfLading.shipment_id == models.Shipment.id)
+        .join(
+            models.BillOfLading,
+            models.BillOfLading.shipment_id == models.Shipment.id
+        )
         .filter(models.Shipment.id == shipment_id)
         .group_by(models.Shipment.id)
         .first()

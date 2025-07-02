@@ -134,7 +134,14 @@ def create_entities(db, summary):
     return insured_id
 
 
-def create_shipment(db, insured_id, port_ids, deal_number, vessel_id, operator_id):
+def create_shipment(
+    db,
+    insured_id,
+    port_ids,
+    deal_number,
+    vessel_id,
+    operator_id
+):
     return crud.create_shipment(
         db,
         ShipmentCreate(

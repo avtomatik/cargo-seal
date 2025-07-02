@@ -9,7 +9,11 @@ class DataProcessor(Protocol):
 
 
 class IndexAssigner:
-    def __init__(self, index_map: dict[int, list[str]], default_index: list[str]):
+    def __init__(
+        self,
+        index_map: dict[int, list[str]],
+        default_index: list[str]
+    ):
         self.index_map = index_map
         self.default_index = default_index
 
