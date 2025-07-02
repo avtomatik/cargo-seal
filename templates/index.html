@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Test File Upload</title>
+</head>
+
+<body>
+  <h1>Upload Excel File to Shipments Endpoint</h1>
+  <form action="http://localhost:8000/api/shipments/push/" method="post" enctype="multipart/form-data">
+    <label for="file">Choose Excel file:</label><br><br>
+    <input type="file" id="file" name="file" accept=".xlsx"><br><br>
+    <input type="submit" value="Upload">
+  </form>
+</body>
+
+</html>

@@ -1,0 +1,310 @@
+import datetime
+from decimal import Decimal
+from typing import List, Optional
+
+from pydantic import (BaseModel, Field, computed_field, field_validator,
+                      model_validator)
+from slugify import slugify
+
+from app.models import DocumentCategory
+
+
+class BillOfLadingBase(BaseModel):
+    shipment_id: int
+    number: str = Field(max_length=64)
+    date: datetime.date
+    product: str = Field(max_length=128)
+    quantity_mt: float
+    quantity_bbl: Optional[float] = Field(default=None, ge=0)
+    value: float
+    ccy: str = Field(default='USD', min_length=3, max_length=3)
+
+    class Config:
+        from_attributes = True
+
+
+class BillOfLadingCreate(BillOfLadingBase):
+    pass
+
+
+class BillOfLadingRead(BillOfLadingBase):
+    id: int
+
+    def format_bl_number(self) -> dict:
+        num = int(self.number) if isinstance(
+            self.number, (int, float)) else self.number
+        return {
+            'bl_number': (
+                f'Bill of Lading #\xa0{num} dated '
+                f'{self.date:%d\xa0%B\xa0%Y}'
+            )
+        }
+
+    @classmethod
+    def format_bl_list(
+        cls,
+        bills_of_lading: List['BillOfLadingRead']
+    ) -> List[dict]:
+        return [bill.format_bl_number() for bill in bills_of_lading]
+
+    class Config:
+        from_attributes = True
+
+
+class CoverageBase(BaseModel):
+    shipment_id: int
+    policy_id: Optional[int] = None
+    debit_note: str = Field(default='#', max_length=255)
+    ordinary_risks_rate: Decimal = Decimal('0.0')
+    war_risks_rate: Decimal = Decimal('0.0')
+    basis_of_valuation: Optional[float] = 0.0
+
+
+class CoverageCreate(CoverageBase):
+    date: datetime.date = Field(default_factory=datetime.date.today)
+
+
+class CoverageRead(BaseModel):
+    shipment: 'ShipmentRead'
+    policy: Optional['PolicyRead'] = None
+    ordinary_risks_rate: Decimal
+    war_risks_rate: Decimal
+    date: datetime.date
+
+    @computed_field(return_type=Decimal)
+    @property
+    def premium(self) -> Decimal:
+        return Decimal(str(self.shipment.total_value_usd)) * (
+            self.ordinary_risks_rate + self.war_risks_rate
+        )
+
+    class Config:
+        from_attributes = True
+
+
+class DocumentBase(BaseModel):
+    filename: str
+    category: DocumentCategory
+    vessel_id: int
+    provider_id: Optional[int] = None
+    number: Optional[str] = None
+    date: datetime.date
+
+
+class DocumentCreate(DocumentBase):
+    @model_validator(mode='after')
+    def validate_required_fields(cls, model):
+        if model.category != DocumentCategory.Q88:
+            if model.provider_id is None:
+                raise ValueError(
+                    'provider_id is required unless category is Q88'
+                )
+            if not model.number:
+                raise ValueError('number is required unless category is Q88')
+        return model
+
+
+class DocumentRead(DocumentBase):
+    id: int
+
+    @computed_field
+    @property
+    def is_valid(self) -> bool:
+        return self.date >= datetime.now().date()
+
+    class Config:
+        from_attributes = True
+
+
+class EntityBase(BaseModel):
+    name: str = Field(..., max_length=255)
+    slug: Optional[str] = Field(None, max_length=128)
+    address: Optional[str] = Field(None, max_length=255)
+
+    class Config:
+        str_strip_whitespace = True
+        validate_assignment = True
+
+
+class EntityCreate(EntityBase):
+    @field_validator('slug', mode='before')
+    @classmethod
+    def generate_slug(cls, v, info):
+        return v or slugify(info.data.get('name'))
+
+    @field_validator('address', mode='before')
+    @classmethod
+    def default_address(cls, v):
+        return v or 'Unknown'
+
+
+class EntityRead(EntityBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+class OperatorBase(BaseModel):
+    first_name: str = Field(
+        ...,
+        max_length=64,
+        description="Operator's First Name"
+    )
+    last_name: str = Field(
+        ...,
+        max_length=64,
+        description="Operator's Last Name"
+    )
+
+    class Config:
+        str_strip_whitespace = True
+        validate_assignment = True
+
+
+class OperatorCreate(OperatorBase):
+    pass
+
+
+class OperatorRead(OperatorBase):
+    id: int
+    first_name: str
+    last_name: str
+
+
+class PolicyBase(BaseModel):
+    number: str
+    inception: datetime.date
+    expiry: Optional[datetime.date]
+    provider_id: int
+    insured_id: int
+
+
+class PolicyCreate(PolicyBase):
+    pass
+
+
+class PolicyRead(PolicyBase):
+    id: int
+    provider: EntityRead
+    insured: EntityRead
+
+    class Config:
+        from_attributes = True
+
+
+class PortBase(BaseModel):
+    name: str = Field(..., max_length=64)
+    country: str = Field(..., max_length=64)
+    region: Optional[str] = Field(None, max_length=64)
+
+
+class PortCreate(PortBase):
+    pass
+
+
+class PortRead(PortBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+class ShipmentBase(BaseModel):
+    deal_number: int
+    insured_id: int
+    vessel_id: int
+    loadport_id: int
+    disport_id: int
+    operator_id: int
+    disport_eta: Optional[datetime.date] = None
+
+    class Config:
+        from_attributes = True
+
+
+class ShipmentCreate(ShipmentBase):
+    pass
+
+
+class ShipmentRead(ShipmentBase):
+    id: int
+    ccy: Optional[str] = 'USD'
+    bills_of_lading: List[BillOfLadingRead]
+
+    @computed_field
+    @property
+    def total_weight_mt(self) -> float:
+        return sum((b.quantity_mt or 0.0) for b in self.bills_of_lading)
+
+    @computed_field
+    @property
+    def total_volume_bbl(self) -> float:
+        return sum((b.quantity_bbl or 0.0) for b in self.bills_of_lading)
+
+    @computed_field
+    @property
+    def total_value_usd(self) -> float:
+        return sum((b.value or 0.0) for b in self.bills_of_lading)
+
+    class Config:
+        from_attributes = True
+
+
+class ShipmentWithTotals(BaseModel):
+    id: int
+    deal_number: int
+    disport_eta: Optional[datetime.date]
+    total_weight_mt: float
+    total_volume_bbl: float
+    total_value_usd: float
+
+    class Config:
+        from_attributes = True
+
+
+class VesselBase(BaseModel):
+    name: str
+    imo: int
+    date_built: datetime.date
+
+    @field_validator('imo')
+    @classmethod
+    def validate_imo(cls, value: int) -> int:
+        if value < 1000000 or value > 9999999:
+            raise ValueError('IMO number must be a 7-digit integer.')
+
+        numbers = []
+        temp = value
+        for _ in range(7):
+            temp, number = divmod(temp, 10)
+            numbers.append(number)
+
+        check_digit = numbers[0]
+        calculated_check = sum(
+            i * num for i, num in enumerate(numbers[1:], start=2)
+        )
+
+        if calculated_check % 10 != check_digit:
+            raise ValueError('Not a valid IMO number.')
+
+        return value
+
+    @property
+    def year_built(self) -> int:
+        return self.date_built.year
+
+    @property
+    def folder_name(self) -> str:
+        return f'imo_{self.imo}_{self.name.strip().lower().replace(" ", "_")}'
+
+
+class VesselCreate(VesselBase):
+    pass
+
+
+class VesselRead(VesselBase):
+    id: int
+
+    class Config:
+        from_attributes = True

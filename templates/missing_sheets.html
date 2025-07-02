@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Missing Sheets</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background: #f8f8f8;
+    }
+
+    h1 {
+      color: #b30000;
+    }
+
+    ul {
+      padding-left: 1.5rem;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Missing required sheets in <code>{{ filename }}</code>.</h1>
+  <p>Found the following sheets:</p>
+  <ul>
+    {% for name in sheet_names %}
+    <li>{{ name }}</li>
+    {% endfor %}
+  </ul>
+</body>
+
+</html>

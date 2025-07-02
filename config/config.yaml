@@ -1,0 +1,45 @@
+default_index:
+- deal_number
+- insured
+- address
+- counterparty
+- beneficiary_address
+- loadport_locality
+- loadport_country
+- disport_locality
+- disport_country
+- vessel
+- imo
+- date_built
+- surveyor_loadport
+- surveyor_disport
+- subject_matter_insured
+- provisional
+- weight_metric
+- ccy
+- basis_of_valuation
+- sum_insured
+
+values_to_remove:
+- Not Disclosed;Not Disclosed
+- Tba;Tba
+- Unknown;Unknown
+- TBA
+- Tba
+- Tbn
+
+rows_to_clean:
+- insured
+- address
+- counterparty
+- beneficiary_address
+- loadport_locality
+- loadport_country
+- disport_locality
+- disport_country
+- vessel
+
+port_replacements:
+  De Kastri: De-Kastri
+  Rostov On Don: Rostov-On-Don
+  Ust Luga: Ust-Luga

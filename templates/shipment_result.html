@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Shipment Info</title>
+</head>
+
+<body>
+  <h1>Shipment File Info</h1>
+  <p><strong>Operator:</strong> {{ operator }}</p>
+  <h2>Sheets:</h2>
+  <ul>
+    {% for sheet in sheet_names %}
+    <li>{{ sheet }}</li>
+    {% endfor %}
+  </ul>
+</body>
+
+</html>
