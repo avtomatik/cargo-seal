@@ -12,7 +12,33 @@ CYRILLIC_TO_LATIN = {
 
 SHEET_NAMES_EXPECTED = {'declaration_form', 'bl_breakdown'}
 
-CLASSES_AGREED = {'DNV', 'ABS', 'Lloyds', 'Bureau Veritas'}
+CLASSES_AGREED = {
+    'American Bureau of Shipping',
+    'Bureau Veritas Marine & Offshore SAS',
+    'China Classification Society',
+    'Croatian Register of Shipping',
+    'DNV AS',
+    'Indian Register of Shipping',
+    'Korean Register',
+    "Hellenic Lloyd's S.A.",
+    "Lloyd's Register (Romania) Srl",
+    "Lloyd's Register Asia",
+    "Lloyd's Register Central and South America Limited",
+    "Lloyd's Register Classification Society (China) Co., Ltd.",
+    "Lloyd's Register DOO Beograd",
+    "Lloyd's Register EMEA",
+    "Lloyd's Register Egypt LLC",
+    "Lloyd's Register Gozetim Ltd. Sti.",
+    "Lloyd's Register Group Limited",
+    "Lloyd's Register Marine and Offshore India LLP",
+    "Lloyd's Register Maritiem Belgie BV",
+    "Lloyd's Register North America Inc.",
+    "Lloyd's Register Singapore Pte. Ltd.",
+    "Lloyd's Register do Brasil Ltda",
+    'Nippon Kaiji Kyokai',
+    'Polski Rejestr Statkow',
+    'RINA SERVICES S.p.A.'
+}
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 
