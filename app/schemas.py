@@ -9,6 +9,28 @@ from slugify import slugify
 from app.models import DocumentCategory
 
 
+# =============================================================================
+# Nested Models
+# =============================================================================
+class InsuredRead(BaseModel):
+    name: str
+    address: str
+
+    class Config:
+        from_attributes = True
+
+
+class ProviderRead(BaseModel):
+    name: str
+    address: str
+
+    class Config:
+        from_attributes = True
+
+
+# =============================================================================
+# Base Models
+# =============================================================================
 class BillOfLadingBase(BaseModel):
     shipment_id: int
     number: str = Field(max_length=64)
@@ -27,8 +49,14 @@ class BillOfLadingCreate(BillOfLadingBase):
     pass
 
 
-class BillOfLadingRead(BillOfLadingBase):
-    id: int
+class BillOfLadingRead(BaseModel):
+    number: str
+    date: datetime.date
+    product: str
+    quantity_mt: float
+    quantity_bbl: Optional[float]
+    value: float
+    ccy: str
 
     def format_bl_number(self) -> dict:
         num = int(self.number) if isinstance(
@@ -167,7 +195,6 @@ class OperatorCreate(OperatorBase):
 
 
 class OperatorRead(OperatorBase):
-    id: int
     first_name: str
     last_name: str
 
@@ -184,10 +211,11 @@ class PolicyCreate(PolicyBase):
     pass
 
 
-class PolicyRead(PolicyBase):
-    id: int
-    provider: EntityRead
-    insured: EntityRead
+class PolicyRead(BaseModel):
+    provider: ProviderRead
+    number: str
+    inception: datetime.date
+    expiry: datetime.date
 
     class Config:
         from_attributes = True
@@ -203,8 +231,10 @@ class PortCreate(PortBase):
     pass
 
 
-class PortRead(PortBase):
-    id: int
+class PortRead(BaseModel):
+    name: str
+    country: str
+    region: str
 
     class Config:
         from_attributes = True
@@ -227,9 +257,14 @@ class ShipmentCreate(ShipmentBase):
     pass
 
 
-class ShipmentRead(ShipmentBase):
-    id: int
-    ccy: Optional[str] = 'USD'
+class ShipmentRead(BaseModel):
+    deal_number: int
+    insured: InsuredRead
+    vessel: 'VesselRead'
+    loadport: PortRead
+    disport: PortRead
+    operator: OperatorRead
+    ccy: Optional[str] = None
     bills_of_lading: List[BillOfLadingRead]
 
     @computed_field
@@ -246,18 +281,6 @@ class ShipmentRead(ShipmentBase):
     @property
     def total_value_usd(self) -> float:
         return sum((b.value or 0.0) for b in self.bills_of_lading)
-
-    class Config:
-        from_attributes = True
-
-
-class ShipmentWithTotals(BaseModel):
-    id: int
-    deal_number: int
-    disport_eta: Optional[datetime.date]
-    total_weight_mt: float
-    total_volume_bbl: float
-    total_value_usd: float
 
     class Config:
         from_attributes = True
@@ -304,7 +327,13 @@ class VesselCreate(VesselBase):
 
 
 class VesselRead(VesselBase):
-    id: int
+    name: str
+    imo: int
+    date_built: datetime.date
 
     class Config:
         from_attributes = True
+
+
+ShipmentRead.update_forward_refs()
+CoverageRead.update_forward_refs()

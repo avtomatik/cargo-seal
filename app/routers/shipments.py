@@ -42,7 +42,7 @@ async def push_shipment(
     )
 
 
-@router.get('/{shipment_id}', response_model=schemas.ShipmentWithTotals)
+@router.get('/{shipment_id}', response_model=schemas.ShipmentRead)
 def read_shipment_with_totals(
     shipment_id: int,
     db: Session = Depends(deps.get_db)
