@@ -264,8 +264,23 @@ class ShipmentRead(BaseModel):
     loadport: PortRead
     disport: PortRead
     operator: OperatorRead
-    ccy: Optional[str] = None
     bills_of_lading: List[BillOfLadingRead]
+
+    @computed_field
+    @property
+    def ccy(self) -> Optional[str]:
+        currencies = {b.ccy for b in self.bills_of_lading if b.ccy is not None}
+        if len(currencies) == 1:
+            return currencies.pop()
+        elif len(currencies) == 0:
+            return None
+        else:
+            raise NotImplementedError(
+                (
+                    'Multiple currencies found in bills_of_lading; '
+                    'cannot determine a single ccy.'
+                )
+            )
 
     @computed_field
     @property
