@@ -1,9 +1,10 @@
-from io import BytesIO
 
-from docx import Document
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
+
+from app.constants import BASE_DIR
+from app.services.coverage import generate_coverage_docx
 
 from .. import crud, deps, schemas
 
@@ -36,29 +37,15 @@ def get_coverage(coverage_id: int, db: Session = Depends(deps.get_db)):
 
 @router.get('/{coverage_id}/draft')
 def draft_coverage_docx(coverage_id: int, db: Session = Depends(deps.get_db)):
-    coverage = db.query(schemas.CoverageRead).filter(
-        schemas.CoverageRead.id == coverage_id).first()
-    if not coverage:
+    obj = crud.get_coverage(db, coverage_id)
+    if not obj:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Coverage not found'
         )
 
-    # === Create the DOCX ===
-    doc = Document()
-    doc.add_heading('Coverage Draft', 0)
-
-    doc.add_paragraph(f'Coverage ID: {coverage.id}')
-    doc.add_paragraph(f'Basis of Valuation: {coverage.basis_of_valuation}')
-    doc.add_paragraph(f'Debit Note: {coverage.debit_note}')
-    doc.add_paragraph(f'Ordinary Risks Rate: {coverage.ordinary_risks_rate}')
-    doc.add_paragraph(f'War Risks Rate: {coverage.war_risks_rate}')
-    doc.add_paragraph(f'Date: {coverage.date}')
-
-    # === Save to memory buffer ===
-    buffer = BytesIO()
-    doc.save(buffer)
-    buffer.seek(0)
+    template_path = BASE_DIR / 'templates' / 'certificate.docx'
+    buffer = generate_coverage_docx(obj, template_path)
 
     return StreamingResponse(
         buffer,

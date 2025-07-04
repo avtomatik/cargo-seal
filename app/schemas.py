@@ -58,23 +58,6 @@ class BillOfLadingRead(BaseModel):
     value: float
     ccy: str
 
-    def format_bl_number(self) -> dict:
-        num = int(self.number) if isinstance(
-            self.number, (int, float)) else self.number
-        return {
-            'bl_number': (
-                f'Bill of Lading #\xa0{num} dated '
-                f'{self.date:%d\xa0%B\xa0%Y}'
-            )
-        }
-
-    @classmethod
-    def format_bl_list(
-        cls,
-        bills_of_lading: List['BillOfLadingRead']
-    ) -> List[dict]:
-        return [bill.format_bl_number() for bill in bills_of_lading]
-
     class Config:
         from_attributes = True
 
@@ -93,11 +76,13 @@ class CoverageCreate(CoverageBase):
 
 
 class CoverageRead(BaseModel):
+    id: int
     shipment: 'ShipmentRead'
     policy: Optional['PolicyRead'] = None
     ordinary_risks_rate: Decimal
     war_risks_rate: Decimal
     date: datetime.date
+    basis_of_valuation: float
 
     @computed_field(return_type=Decimal)
     @property
@@ -198,6 +183,9 @@ class OperatorRead(OperatorBase):
     first_name: str
     last_name: str
 
+    class Config:
+        from_attributes = True
+
 
 class PolicyBase(BaseModel):
     number: str
@@ -235,6 +223,10 @@ class PortRead(BaseModel):
     name: str
     country: str
     region: str
+
+    @property
+    def full_name(self) -> str:
+        return f'{self.name}, {self.country}'
 
     class Config:
         from_attributes = True
@@ -296,6 +288,30 @@ class ShipmentRead(BaseModel):
     @property
     def total_value_usd(self) -> float:
         return sum((b.value or 0.0) for b in self.bills_of_lading)
+
+    @computed_field
+    @property
+    def product_names(self) -> Optional[str]:
+        names = {b.product for b in self.bills_of_lading if b.product}
+        if not names:
+            return None
+        return '; '.join(sorted(names))
+
+    @computed_field
+    @property
+    def bills_of_lading_display(self) -> List[dict[str, str]]:
+        return [self._format_bl(b) for b in self.bills_of_lading]
+
+    def _format_bl(self, bill: BillOfLadingRead) -> dict[str, str]:
+        NBSP = '\u00A0'
+
+        num = int(bill.number) if str(bill.number).isdigit() else bill.number
+        return {
+            'bl_number': (
+                f'Bill of Lading{NBSP}#{NBSP}{num} '
+                f'dated {bill.date:%d{NBSP}%B{NBSP}%Y}'
+            )
+        }
 
     class Config:
         from_attributes = True
