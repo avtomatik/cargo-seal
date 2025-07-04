@@ -28,12 +28,12 @@ def check_vessel_documents(db: Session, vessel_id: int) -> dict:
         if doc.date and doc.date > today:
             results['invalid_documents'].append({
                 'id': doc.id,
-                'type': doc.type,
+                'category': doc.category,
                 'date': doc.date.isoformat(),
             })
 
-        if doc.type == models.DocumentCategory.CLASS_CERTIFICATE:
-            if doc.value in CLASSES_AGREED:
+        if doc.category == models.DocumentCategory.CLASS_CERTIFICATE:
+            if doc.provider.name in CLASSES_AGREED:
                 results['class_certificate_valid'] = True
 
     return results

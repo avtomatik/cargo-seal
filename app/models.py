@@ -29,7 +29,7 @@ class Coverage(Base):
     id = Column(Integer, primary_key=True, index=True)
     shipment_id = Column(Integer, ForeignKey('shipments.id'), nullable=False)
     policy_id = Column(Integer, ForeignKey('policies.id'), nullable=True)
-    basis_of_valuation = Column(Float, nullable=False)
+    basis_of_valuation = Column(Float, nullable=False)  # value_margin
 
     debit_note = Column(String(255), default='#')
     ordinary_risks_rate = Column(Numeric(5, 4), default=0.0)

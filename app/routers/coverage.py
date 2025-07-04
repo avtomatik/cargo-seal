@@ -1,9 +1,8 @@
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
-from app.constants import BASE_DIR
+from app.constants import TEMPLATE_DIR
 from app.services.coverage import generate_coverage_docx
 
 from .. import crud, deps, schemas
@@ -44,7 +43,7 @@ def draft_coverage_docx(coverage_id: int, db: Session = Depends(deps.get_db)):
             detail='Coverage not found'
         )
 
-    template_path = BASE_DIR / 'templates' / 'certificate.docx'
+    template_path = TEMPLATE_DIR / 'certificate.docx'
     buffer = generate_coverage_docx(obj, template_path)
 
     return StreamingResponse(

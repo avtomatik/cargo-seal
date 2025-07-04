@@ -12,7 +12,7 @@ CYRILLIC_TO_LATIN = {
 
 SHEET_NAMES_EXPECTED = {'declaration_form', 'bl_breakdown'}
 
-CLASSES_AGREED = {
+CLASSIFICATION_SOCIETIES_IACS = {
     'American Bureau of Shipping',
     'Bureau Veritas Marine & Offshore SAS',
     'China Classification Society',
@@ -40,9 +40,15 @@ CLASSES_AGREED = {
     'RINA SERVICES S.p.A.'
 }
 
+CLASSES_AGREED = CLASSIFICATION_SOCIETIES_IACS | set(
+    ['Russian Maritime Register of Shipping']
+)
+
 BASE_DIR = Path(__file__).resolve().parents[1]
 
 FIXTURE_DIR = BASE_DIR / 'app' / 'fixtures'
+
+TEMPLATE_DIR = BASE_DIR / 'templates'
 
 COL_FILE_NAME = 'columns.yaml'
 
