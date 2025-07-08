@@ -15,6 +15,11 @@ def check_vessel_documents(db: Session, vessel_id: int) -> dict:
 
     results = {
         'vessel_id': vessel_id,
+        'vessel': {
+            'name': vessel.name,
+            'imo': vessel.imo,
+            'date_built': vessel.date_built
+        },
         'invalid_documents': [],
         'class_certificate_valid': False,
     }

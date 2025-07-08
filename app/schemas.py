@@ -366,5 +366,5 @@ class VesselRead(VesselBase):
         from_attributes = True
 
 
-ShipmentRead.update_forward_refs()
-CoverageRead.update_forward_refs()
+ShipmentRead.model_rebuild()
+CoverageRead.model_rebuild()
