@@ -49,7 +49,7 @@ def parse_summary_and_details(path):
     required_columns = [
         'bl_number',
         'bl_date',
-        'subject_matter_insured',
+        'subject_matter',
         'weight_mt_in_vacuum',
         'sum_insured_100_usd'
     ]
@@ -151,7 +151,6 @@ def create_shipment(
             loadport_id=port_ids['loadport_locality'],
             disport_id=port_ids['disport_locality'],
             operator_id=operator_id,
-            disport_eta=None
         )
     )
 
@@ -162,7 +161,7 @@ def create_bills_of_lading(db, df_details, shipment_id, ccy='USD'):
             shipment_id=shipment_id,
             number=str(row['bl_number']),
             date=row['bl_date'].date(),
-            product=row['subject_matter_insured'],
+            product=row['subject_matter'],
             quantity_mt=row['weight_mt_in_vacuum'],
             quantity_bbl=row.get('volume_bbl', 0.0),
             value=row['sum_insured_100_usd'],
@@ -174,12 +173,12 @@ def create_bills_of_lading(db, df_details, shipment_id, ccy='USD'):
     crud.bulk_create_bills(db, items)
 
 
-def create_coverage(db, shipment_id, basis_of_valuation):
+def create_coverage(db, shipment_id, value_margin):
     crud.create_coverage(
         db,
         CoverageCreate(
             shipment_id=shipment_id,
-            basis_of_valuation=basis_of_valuation,
+            value_margin=value_margin,
             policy_id=None
         )
     )

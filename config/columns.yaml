@@ -13,7 +13,7 @@
 - date_built
 - surveyor_loadport
 - surveyor_disport
-- subject_matter_insured
+- subject_matter
 - provisional
 - weight_metric
 - ccy
@@ -37,7 +37,7 @@
 - date_built
 - surveyor_loadport
 - surveyor_disport
-- subject_matter_insured
+- subject_matter
 - provisional
 - weight_metric
 - ccy
@@ -56,7 +56,7 @@
 - date_built
 - surveyor_loadport
 - surveyor_disport
-- subject_matter_insured
+- subject_matter
 - provisional
 - ccy
 - weight_kg

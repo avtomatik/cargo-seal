@@ -188,7 +188,6 @@ def get_shipment_with_totals(db: Session, shipment_id: int):
         db.query(
             models.Shipment.id,
             models.Shipment.deal_number,
-            models.Shipment.disport_eta,
             func.coalesce(
                 func.sum(models.BillOfLading.quantity_mt),
                 0.0
@@ -215,7 +214,6 @@ def get_shipment_with_totals(db: Session, shipment_id: int):
         return {
             'id': result.id,
             'deal_number': result.deal_number,
-            'disport_eta': result.disport_eta,
             'total_weight_mt': result.total_weight_mt,
             'total_volume_bbl': result.total_volume_bbl,
             'total_value_usd': result.total_value_usd,

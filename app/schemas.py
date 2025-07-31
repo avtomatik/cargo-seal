@@ -68,7 +68,7 @@ class CoverageBase(BaseModel):
     debit_note: str = Field(default='#', max_length=255)
     ordinary_risks_rate: Decimal = Decimal('0.0')
     war_risks_rate: Decimal = Decimal('0.0')
-    basis_of_valuation: Optional[float] = 0.0
+    value_margin: Optional[float] = 0.0
 
 
 class CoverageCreate(CoverageBase):
@@ -82,7 +82,7 @@ class CoverageRead(BaseModel):
     ordinary_risks_rate: Decimal
     war_risks_rate: Decimal
     date: datetime.date
-    basis_of_valuation: float
+    value_margin: float
 
     @computed_field(return_type=Decimal)
     @property
@@ -239,7 +239,6 @@ class ShipmentBase(BaseModel):
     loadport_id: int
     disport_id: int
     operator_id: int
-    disport_eta: Optional[datetime.date] = None
 
     class Config:
         from_attributes = True

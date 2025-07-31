@@ -29,7 +29,7 @@ class Coverage(Base):
     id = Column(Integer, primary_key=True, index=True)
     shipment_id = Column(Integer, ForeignKey('shipments.id'), nullable=False)
     policy_id = Column(Integer, ForeignKey('policies.id'), nullable=True)
-    basis_of_valuation = Column(Float, nullable=False)  # value_margin
+    value_margin = Column(Float, nullable=False)
 
     debit_note = Column(String(255), default='#')
     ordinary_risks_rate = Column(Numeric(5, 4), default=0.0)
@@ -53,7 +53,7 @@ class Document(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    filename = Column(String(255), nullable=False)
+    filename = Column(String(255), nullable=True)
     category = Column(Enum(DocumentCategory), nullable=False)
 
     vessel_id = Column(Integer, ForeignKey('vessels.id'), nullable=False)
@@ -130,7 +130,6 @@ class Shipment(Base):
     loadport_id = Column(Integer, ForeignKey('ports.id'), nullable=False)
     disport_id = Column(Integer, ForeignKey('ports.id'), nullable=False)
     operator_id = Column(Integer, ForeignKey('operators.id'), nullable=False)
-    disport_eta = Column(Date, nullable=True)
 
     insured = relationship('Entity', backref='shipments_as_insured')
     vessel = relationship('Vessel', backref='shipments')
