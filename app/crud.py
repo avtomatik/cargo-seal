@@ -1,6 +1,6 @@
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from . import models, schemas
 
@@ -184,38 +184,39 @@ def upsert_vessel(db: Session, vessel: schemas.VesselCreate):
 
 
 def get_shipment_with_totals(db: Session, shipment_id: int):
-    result = (
+    totals_subq = (
         db.query(
-            models.Shipment.id,
-            models.Shipment.deal_number,
-            func.coalesce(
-                func.sum(models.BillOfLading.quantity_mt),
-                0.0
-            ).label('total_weight_mt'),
-            func.coalesce(
-                func.sum(models.BillOfLading.quantity_bbl),
-                0.0
-            ).label('total_volume_bbl'),
-            func.coalesce(
-                func.sum(models.BillOfLading.value),
-                0.0
-            ).label('total_value_usd'),
+            models.BillOfLading.shipment_id.label('shipment_id'),
+            func.coalesce(func.sum(models.BillOfLading.quantity_mt),
+                          0.0).label('total_weight_mt'),
+            func.coalesce(func.sum(models.BillOfLading.quantity_bbl), 0.0).label(
+                'total_volume_bbl'),
+            func.coalesce(func.sum(models.BillOfLading.value),
+                          0.0).label('total_value_usd'),
         )
-        .join(
-            models.BillOfLading,
-            models.BillOfLading.shipment_id == models.Shipment.id
+        .filter(models.BillOfLading.shipment_id == shipment_id)
+        .group_by(models.BillOfLading.shipment_id)
+        .subquery()
+    )
+
+    shipment = (
+        db.query(models.Shipment)
+        .options(
+            joinedload(models.Shipment.insured),
+            joinedload(models.Shipment.vessel),
+            joinedload(models.Shipment.loadport),
+            joinedload(models.Shipment.disport),
+            joinedload(models.Shipment.operator),
+            joinedload(models.Shipment.bills_of_lading),
         )
+        .outerjoin(totals_subq, totals_subq.c.shipment_id == models.Shipment.id)
         .filter(models.Shipment.id == shipment_id)
-        .group_by(models.Shipment.id)
         .first()
     )
 
-    if result:
-        return {
-            'id': result.id,
-            'deal_number': result.deal_number,
-            'total_weight_mt': result.total_weight_mt,
-            'total_volume_bbl': result.total_volume_bbl,
-            'total_value_usd': result.total_value_usd,
-        }
-    return None
+    if shipment:
+        shipment.total_weight_mt = totals_subq.c.total_weight_mt
+        shipment.total_volume_bbl = totals_subq.c.total_volume_bbl
+        shipment.total_value_usd = totals_subq.c.total_value_usd
+
+    return shipment

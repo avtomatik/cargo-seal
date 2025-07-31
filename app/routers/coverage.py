@@ -36,24 +36,24 @@ def get_coverage(coverage_id: int, db: Session = Depends(deps.get_db)):
 
 @router.get('/{coverage_id}/draft')
 def draft_coverage_docx(coverage_id: int, db: Session = Depends(deps.get_db)):
-    coverage = crud.get_coverage(db, coverage_id)
-    if not coverage:
+    obj = crud.get_coverage(db, coverage_id)
+    if not obj:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Coverage not found'
         )
 
-    shipment = coverage.shipment
+    shipment = obj.shipment
     vessel = shipment.vessel
 
-    coverage_date = coverage.date
+    coverage_date = obj.date
     imo = vessel.imo
     vessel_name = vessel.name.lower().replace(' ', '_')
 
     filename = f'certificate_{coverage_date}_imo_{imo}_{vessel_name}_draft.docx'
 
     template_path = TEMPLATE_DIR / 'certificate.docx'
-    buffer = generate_coverage_docx(coverage, template_path)
+    buffer = generate_coverage_docx(obj, template_path)
 
     return StreamingResponse(
         buffer,
