@@ -23,7 +23,7 @@ def generate_coverage_docx(coverage_obj: Any, template_path: Path) -> BytesIO:
         'year_built': f'{coverage_read.shipment.vessel.year_built}',
         'loadport': coverage_read.shipment.loadport.full_name,
         'disport': coverage_read.shipment.disport.full_name,
-        'subject_matter': f'{coverage_read.shipment.product_names}',
+        'subject_matter_insured': f'{coverage_read.shipment.product_names}',
         'bl_number': coverage_read.shipment.bills_of_lading_display,
         'date': f'{coverage_read.date:%d{NBSP}%B{NBSP}%Y}',
         'bl_date': f'{coverage_read.date:%d{NBSP}%B{NBSP}%Y}',

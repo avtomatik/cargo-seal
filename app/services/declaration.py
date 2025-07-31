@@ -49,7 +49,7 @@ def parse_summary_and_details(path):
     required_columns = [
         'bl_number',
         'bl_date',
-        'subject_matter',
+        'subject_matter_insured',
         'weight_mt_in_vacuum',
         'sum_insured_100_usd'
     ]
@@ -161,7 +161,7 @@ def create_bills_of_lading(db, df_details, shipment_id, ccy='USD'):
             shipment_id=shipment_id,
             number=str(row['bl_number']),
             date=row['bl_date'].date(),
-            product=row['subject_matter'],
+            product=row['subject_matter_insured'].strip().title(),
             quantity_mt=row['weight_mt_in_vacuum'],
             quantity_bbl=row.get('volume_bbl', 0.0),
             value=row['sum_insured_100_usd'],
@@ -204,7 +204,7 @@ def process_declaration_file(file: UploadFile, db: Session) -> tuple:
             operator.id
         )
         create_bills_of_lading(db, df_details, shipment.id)
-        create_coverage(db, shipment.id, summary.get('basis_of_valuation'))
+        create_coverage(db, shipment.id, summary.get('basis_of_valuation', 0.0))
 
         return sheet_names, operator_name, vessel
 
