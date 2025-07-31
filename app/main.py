@@ -5,14 +5,15 @@ from app.routers import (coverage, documents, merge, policies, shipments,
 
 from .database import Base, engine
 
+PREFIX = '/api'
+
 app = FastAPI(title='Cargo Seal – Marine Insurance Tracker')
 
 Base.metadata.create_all(bind=engine)
 
-# Register all routers
-app.include_router(coverage.router, prefix='/api')
-app.include_router(documents.router, prefix='/api')
-app.include_router(merge.router, prefix='/api')
-app.include_router(policies.router, prefix='/api')
-app.include_router(shipments.router, prefix='/api')
-app.include_router(vessels.router, prefix='/api')
+app.include_router(coverage.router, prefix=PREFIX)
+app.include_router(documents.router, prefix=PREFIX)
+app.include_router(merge.router, prefix=PREFIX)
+app.include_router(policies.router, prefix=PREFIX)
+app.include_router(shipments.router, prefix=PREFIX)
+app.include_router(vessels.router, prefix=PREFIX)
