@@ -14,8 +14,8 @@ from sqlalchemy.orm import sessionmaker
 
 # Example:
 # For PostgreSQL: 'postgresql://user:password@localhost/dbname'
-# For SQLite: 'sqlite:///./cargo_seal.sqlite3'
-DATABASE_URL = 'sqlite:///./cargo_seal.sqlite3'
+# For SQLite: 'sqlite:///./db.sqlite3'
+DATABASE_URL = 'sqlite:///./db.sqlite3'
 
 # Additional arguments for SQLite to prevent threading issues
 SQLITE_CONNECT_ARGS = {'check_same_thread': False}
