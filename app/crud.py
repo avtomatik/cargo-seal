@@ -2,6 +2,9 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
+from app.utils.fuzzy_matcher import (DEFAULT_FUZZY_MATCH_THRESHOLD,
+                                     fuzzy_match_single)
+
 from . import models, schemas
 
 
@@ -56,6 +59,7 @@ def create_entity(db: Session, entity: schemas.EntityCreate):
     entity_data = entity.model_dump()
     db_entity = models.Entity(**entity_data)
     db.add(db_entity)
+
     try:
         db.commit()
         db.refresh(db_entity)
@@ -63,6 +67,23 @@ def create_entity(db: Session, entity: schemas.EntityCreate):
     except IntegrityError:
         db.rollback()
         raise
+
+
+def create_or_get_entity(
+    db: Session,
+    entity: schemas.EntityCreate,
+    fuzzy_threshold: int = DEFAULT_FUZZY_MATCH_THRESHOLD
+) -> models.Entity:
+    existing_entity = fuzzy_match_single(
+        db,
+        entity.name,
+        threshold=fuzzy_threshold
+    )
+
+    if existing_entity:
+        return existing_entity
+
+    return create_entity(db, entity)
 
 
 def upsert_entity_by_name(db: Session, entity: schemas.EntityCreate):
