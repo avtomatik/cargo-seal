@@ -124,7 +124,7 @@ def create_entities(db, summary):
             continue
 
         address = summary.get(address_key) if address_key else None
-        entity = crud.upsert_entity_by_name(
+        entity = crud.fuzzy_upsert_entity(
             db,
             EntityCreate(name=name, address=address)
         )

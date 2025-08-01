@@ -3,7 +3,7 @@ from typing import Callable, List, Optional, Type
 from rapidfuzz import fuzz
 from sqlalchemy.orm import Session
 
-DEFAULT_FUZZY_MATCH_THRESHOLD = 85
+DEFAULT_FUZZY_MATCH_THRESHOLD = 90
 
 
 def fuzzy_match_single(

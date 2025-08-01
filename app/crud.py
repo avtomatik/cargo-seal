@@ -69,38 +69,27 @@ def create_entity(db: Session, entity: schemas.EntityCreate):
         raise
 
 
-def create_or_get_entity(
+def fuzzy_upsert_entity(
     db: Session,
     entity: schemas.EntityCreate,
     fuzzy_threshold: int = DEFAULT_FUZZY_MATCH_THRESHOLD
 ) -> models.Entity:
-    existing_entity = fuzzy_match_single(
+    """
+    Fuzzy upsert: if a close entity is found by name, return it as-is;
+    otherwise create a new one.
+    """
+    existing = fuzzy_match_single(
         db,
-        entity.name,
+        model=models.Entity,
+        input_str=entity.name,
+        field=lambda x: x.name,
         threshold=fuzzy_threshold
     )
 
-    if existing_entity:
-        return existing_entity
+    if existing:
+        return existing
 
     return create_entity(db, entity)
-
-
-def upsert_entity_by_name(db: Session, entity: schemas.EntityCreate):
-    """
-    Either update an existing entity by name or create a new one.
-    """
-    existing = get_entity_by_name(db, entity.name)
-    entity_data = entity.model_dump()
-
-    if existing:
-        for key, value in entity_data.items():
-            setattr(existing, key, value)
-        db.commit()
-        db.refresh(existing)
-        return existing
-    else:
-        return create_entity(db, entity)
 
 
 def get_or_create_operator(
