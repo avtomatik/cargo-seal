@@ -88,11 +88,15 @@ def load_documents(args):
 
             category = parse_category(row['category'])
 
+            number = row.get('number') or None
+            if category == DocumentCategory.Q88 and number and number.strip().lower() == 'any':
+                number = None
+
             document = Document(
                 filename=row['file'].strip(),
                 vessel_id=vessel.id,
                 provider_id=provider.id if provider else None,
-                number=row.get('number') or None,
+                number=number,
                 date=datetime.strptime(row['date'], '%Y-%m-%d').date(),
                 category=category,
             )
