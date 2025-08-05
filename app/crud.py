@@ -1,5 +1,4 @@
 from sqlalchemy import func, select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
 from . import models, schemas
@@ -52,20 +51,16 @@ def get_entities(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Entity).offset(skip).limit(limit).all()
 
 
-def create_entity(db: Session, entity: schemas.EntityCreate):
-    entity_data = entity.model_dump()
-    db_entity = models.Entity(**entity_data)
-    db.add(db_entity)
-    try:
+def create_entity(db: Session, entity: schemas.EntityCreate, commit: bool = True):
+    db_obj = models.Entity(**entity.model_dump())
+    db.add(db_obj)
+    if commit:
         db.commit()
-        db.refresh(db_entity)
-        return db_entity
-    except IntegrityError:
-        db.rollback()
-        raise
+        db.refresh(db_obj)
+    return db_obj
 
 
-def upsert_entity_by_name(db: Session, entity: schemas.EntityCreate):
+def upsert_entity_by_name(db: Session, entity: schemas.EntityCreate, commit: bool = True):
     """
     Either update an existing entity by name or create a new one.
     """
@@ -75,11 +70,12 @@ def upsert_entity_by_name(db: Session, entity: schemas.EntityCreate):
     if existing:
         for key, value in entity_data.items():
             setattr(existing, key, value)
-        db.commit()
-        db.refresh(existing)
+        if commit:
+            db.commit()
+            db.refresh(existing)
         return existing
     else:
-        return create_entity(db, entity)
+        return create_entity(db, entity, commit=commit)
 
 
 def get_or_create_operator(
@@ -164,11 +160,9 @@ def get_vessel_by_imo(db: Session, imo: int):
     )
 
 
-def upsert_vessel(db: Session, vessel: schemas.VesselCreate):
+def upsert_vessel(db: Session, vessel: schemas.VesselCreate, commit: bool = True):
     db_obj = db.query(models.Vessel).filter(
-        models.Vessel.imo == vessel.imo
-    ).first()
-
+        models.Vessel.imo == vessel.imo).first()
     vessel_data = vessel.model_dump()
 
     if db_obj:
@@ -178,8 +172,10 @@ def upsert_vessel(db: Session, vessel: schemas.VesselCreate):
         db_obj = models.Vessel(**vessel_data)
         db.add(db_obj)
 
-    db.commit()
-    db.refresh(db_obj)
+    if commit:
+        db.commit()
+        db.refresh(db_obj)
+
     return db_obj
 
 

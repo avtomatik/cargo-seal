@@ -64,6 +64,14 @@ class Document(Base):
     vessel = relationship('Vessel', backref='documents')
     provider = relationship('Entity', backref='documents')
 
+    def __repr__(self):
+        return (
+            f"<Document(filename='{self.filename}', "
+            f"category='{self.category.name}', "
+            f"vessel_id={self.vessel_id}, provider_id={self.provider_id}, "
+            f"number='{self.number}', date={self.date})>"
+        )
+
 
 class Entity(Base):
     __tablename__ = 'entities'
