@@ -123,7 +123,7 @@ class DocumentRead(DocumentBase):
     @computed_field
     @property
     def is_valid(self) -> bool:
-        return self.date >= datetime.now().date()
+        return self.date >= datetime.datetime.now().date()
 
     class Config:
         from_attributes = True

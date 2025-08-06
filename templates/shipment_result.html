@@ -25,7 +25,15 @@
     <li>
       <strong>Provider:</strong> {{ doc.provider.name if doc.provider else 'N/A' }}<br>
       <strong>Number:</strong> {{ doc.number or 'N/A' }}<br>
-      <strong>Date:</strong> {{ doc.date.strftime('%Y-%m-%d') }}
+      <strong>Date:</strong> {{ doc.date.strftime('%Y-%m-%d') }}<br>
+      {% if doc.category.value == 'Class Certificate' %}
+      <strong>Provider Agreed:</strong>
+      {% if doc.provider_agreed %}
+      Yes
+      {% else %}
+      No
+      {% endif %}
+      {% endif %}
     </li>
     {% endfor %}
   </ul>

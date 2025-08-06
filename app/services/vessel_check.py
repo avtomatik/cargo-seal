@@ -1,44 +1,38 @@
-from datetime import date
+from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from app import models
 from app.constants import CLASSES_AGREED
+from app.models import Document, DocumentCategory
+
+VALID_DOCUMENT_CATEGORIES = [
+    DocumentCategory.CLASS_CERTIFICATE,
+    DocumentCategory.PI_POLICY
+]
 
 
-def check_vessel_documents(db: Session, vessel_id: int) -> dict:
-    vessel = db.query(models.Vessel).filter(
-        models.Vessel.id == vessel_id
-    ).first()
-    if not vessel:
-        raise ValueError(f'Vessel with ID {vessel_id} not found.')
+def get_valid_documents_with_provider_flag(db: Session, vessel_id: int) -> list[dict]:
+    today = datetime.now().date()
 
-    results = {
-        'vessel_id': vessel_id,
-        'vessel': {
-            'name': vessel.name,
-            'imo': vessel.imo,
-            'date_built': vessel.date_built
-        },
-        'invalid_documents': [],
-        'class_certificate_valid': False,
-    }
-
-    today = date.today()
-    documents = db.query(models.Document).filter(
-        models.Document.vessel_id == vessel_id
+    valid_documents = db.query(Document).filter(
+        Document.vessel_id == vessel_id,
+        Document.category.in_(VALID_DOCUMENT_CATEGORIES),
+        Document.date >= today
     ).all()
 
-    for doc in documents:
-        if doc.date and doc.date > today:
-            results['invalid_documents'].append({
-                'id': doc.id,
-                'category': doc.category,
-                'date': doc.date.isoformat(),
-            })
-
-        if doc.category == models.DocumentCategory.CLASS_CERTIFICATE:
-            if doc.provider.name in CLASSES_AGREED:
-                results['class_certificate_valid'] = True
+    results = []
+    for doc in valid_documents:
+        doc_data = {
+            'id': doc.id,
+            'filename': doc.filename,
+            'category': doc.category,
+            'provider': doc.provider,
+            'number': doc.number,
+            'date': doc.date,
+            'provider_agreed': (doc.provider and doc.provider.name in CLASSES_AGREED)
+            if doc.category == DocumentCategory.CLASS_CERTIFICATE
+            else None
+        }
+        results.append(doc_data)
 
     return results
