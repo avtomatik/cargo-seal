@@ -18,12 +18,12 @@
 
   {% if documents %}
   <h2>Valid Vessel Documents</h2>
-  {% for category, items in documents|groupby("category") %}
-  <h3>{{ category.name }}</h3>
+  {% for category, items in documents|groupby("category.name") %}
+  <h3>{{ category }}</h3>
   <ul>
     {% for doc in items %}
     <li>
-      <strong>Filename:</strong> {{ doc.filename or 'N/A' }}<br>
+      <strong>Provider:</strong> {{ doc.provider.name if doc.provider else 'N/A' }}<br>
       <strong>Number:</strong> {{ doc.number or 'N/A' }}<br>
       <strong>Date:</strong> {{ doc.date.strftime('%Y-%m-%d') }}
     </li>
@@ -31,7 +31,7 @@
   </ul>
   {% endfor %}
   {% else %}
-  <p>No valid vessel documents found.</p>
+  <h2>No valid vessel documents found.</h2>
   {% endif %}
 </body>
 
