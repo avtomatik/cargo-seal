@@ -1,0 +1,158 @@
+[default]
+default_index = [
+  "deal_number",
+  "insured",
+  "address",
+  "counterparty",
+  "beneficiary_address",
+  "loadport_locality",
+  "loadport_country",
+  "disport_locality",
+  "disport_country",
+  "vessel",
+  "imo",
+  "date_built",
+  "surveyor_loadport",
+  "surveyor_disport",
+  "subject_matter_insured",
+  "provisional",
+  "weight_metric",
+  "ccy",
+  "basis_of_valuation",
+  "sum_insured"
+]
+
+values_to_remove = [
+  "Not Disclosed;Not Disclosed",
+  "Tba;Tba",
+  "Unknown;Unknown",
+  "TBA",
+  "Tba",
+  "Tbn"
+]
+
+rows_to_clean = [
+  "insured",
+  "address",
+  "counterparty",
+  "beneficiary_address",
+  "loadport_locality",
+  "loadport_country",
+  "disport_locality",
+  "disport_country",
+  "vessel"
+]
+
+[port_replacements]
+De_Kastri = "De-Kastri"
+Rostov_On_Don = "Rostov-On-Don"
+Ust_Luga = "Ust-Luga"
+
+[columns]
+
+[columns."22"]
+columns = [
+  "deal_number",
+  "insured",
+  "address",
+  "counterparty",
+  "beneficiary_address",
+  "loadport_locality",
+  "loadport_country",
+  "disport_locality",
+  "disport_country",
+  "vessel",
+  "imo",
+  "date_built",
+  "surveyor_loadport",
+  "surveyor_disport",
+  "subject_matter_insured",
+  "provisional",
+  "weight_metric",
+  "ccy",
+  "basis_of_valuation",
+  "sum_insured",
+  "contract_number",
+  "disport_eta"
+]
+
+[columns."20"]
+columns = [
+  "deal_number",
+  "insured",
+  "address",
+  "counterparty",
+  "beneficiary_address",
+  "loadport_locality",
+  "loadport_country",
+  "disport_locality",
+  "disport_country",
+  "vessel",
+  "imo",
+  "date_built",
+  "surveyor_loadport",
+  "surveyor_disport",
+  "subject_matter_insured",
+  "provisional",
+  "weight_metric",
+  "ccy",
+  "basis_of_valuation",
+  "sum_insured"
+]
+
+[columns."16"]
+columns = [
+  "counterparty",
+  "beneficiary_address",
+  "loadport_locality",
+  "loadport_country",
+  "disport_locality",
+  "disport_country",
+  "vessel",
+  "imo",
+  "date_built",
+  "surveyor_loadport",
+  "surveyor_disport",
+  "subject_matter_insured",
+  "provisional",
+  "ccy",
+  "weight_kg",
+  "sum_insured"
+]
+
+[columns."15"]
+columns = [
+  "deal_number",
+  "insured",
+  "address",
+  "counterparty",
+  "beneficiary_address",
+  "loadport_locality",
+  "loadport_country",
+  "disport_locality",
+  "disport_country",
+  "vessel",
+  "imo",
+  "date_built",
+  "surveyor_loadport",
+  "ccy",
+  "sum_insured"
+]
+
+[columns."14"]
+columns = [
+  "deal_number",
+  "insured",
+  "address",
+  "counterparty",
+  "beneficiary_address",
+  "loadport_locality",
+  "loadport_country",
+  "disport_locality",
+  "disport_country",
+  "vessel",
+  "imo",
+  "date_built",
+  "ccy",
+  "sum_insured"
+]

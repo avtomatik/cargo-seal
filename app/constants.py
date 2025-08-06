@@ -50,10 +50,6 @@ FIXTURE_DIR = BASE_DIR / 'app' / 'fixtures'
 
 TEMPLATE_DIR = BASE_DIR / 'templates'
 
-COL_FILE_NAME = 'columns.yaml'
+CONFIG_FILE_NAME = 'excel_config.toml'
 
-GEN_FILE_NAME = 'config.yaml'
-
-COL_FILE_PATH = BASE_DIR / 'config' / COL_FILE_NAME
-
-GEN_FILE_PATH = BASE_DIR / 'config' / GEN_FILE_NAME
+CONFIG_FILE_PATH = BASE_DIR / 'config' / CONFIG_FILE_NAME

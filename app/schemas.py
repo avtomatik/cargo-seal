@@ -37,7 +37,7 @@ class BillOfLadingBase(BaseModel):
     date: datetime.date
     product: str = Field(max_length=128)
     quantity_mt: float
-    quantity_bbl: Optional[float] = Field(default=None, ge=0)
+    quantity_bbl: Optional[float] = Field(default=None, ge=-1)
     value: float
     ccy: str = Field(default='USD', min_length=3, max_length=3)
 
