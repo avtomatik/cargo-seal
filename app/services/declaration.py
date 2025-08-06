@@ -201,10 +201,14 @@ def process_declaration_file(file: UploadFile, db: Session) -> tuple:
             port_ids,
             summary['deal_number'],
             vessel.id,
-            operator.id
+            operator.id,
         )
         create_bills_of_lading(db, df_details, shipment.id)
-        create_coverage(db, shipment.id, summary.get('basis_of_valuation', 0.0))
+        create_coverage(
+            db,
+            shipment.id,
+            summary.get('basis_of_valuation', 0.0),
+        )
 
         return sheet_names, operator_name, vessel
 

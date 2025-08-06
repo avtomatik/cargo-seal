@@ -1,5 +1,6 @@
 import argparse
 import csv
+import difflib
 from datetime import datetime
 from typing import List
 
@@ -28,7 +29,7 @@ def parse_args():
 
 
 def load_csv_data(path: str) -> List[dict]:
-    with open(path, newline='') as csvfile:
+    with open(path, encoding='utf-8', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         return list(reader)
 

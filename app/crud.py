@@ -1,3 +1,4 @@
+from rapidfuzz import process
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
@@ -34,8 +35,23 @@ def create_coverage(
     return new_coverage
 
 
-def get_entity_by_name(db: Session, name: str):
-    return db.query(models.Entity).filter(models.Entity.name == name).first()
+def get_entity_by_name(db: Session, name: str, limit=10, score_cutoff=80):
+    first_word = name.split()[0]
+    candidates = (
+        db.query(models.Entity)
+        .filter(models.Entity.name.ilike(f'%{first_word}%'))
+        .limit(limit)
+        .all()
+    )
+
+    names = [c.name for c in candidates]
+    matches = process.extract(name, names, limit=1, score_cutoff=score_cutoff)
+
+    if matches:
+        best_match_name = matches[0][0]
+        return next(c for c in candidates if c.name == best_match_name)
+
+    return None
 
 
 def get_entity(db: Session, entity_id: int):
@@ -62,20 +78,15 @@ def create_entity(db: Session, entity: schemas.EntityCreate, commit: bool = True
 
 def upsert_entity_by_name(db: Session, entity: schemas.EntityCreate, commit: bool = True):
     """
-    Either update an existing entity by name or create a new one.
+    Return existing entity by fuzzy name match, or create a new one.
+    Does NOT update existing entities.
     """
     existing = get_entity_by_name(db, entity.name)
-    entity_data = entity.model_dump()
 
     if existing:
-        for key, value in entity_data.items():
-            setattr(existing, key, value)
-        if commit:
-            db.commit()
-            db.refresh(existing)
         return existing
-    else:
-        return create_entity(db, entity, commit=commit)
+
+    return create_entity(db, entity, commit=commit)
 
 
 def get_or_create_operator(
@@ -161,22 +172,26 @@ def get_vessel_by_imo(db: Session, imo: int):
 
 
 def upsert_vessel(db: Session, vessel: schemas.VesselCreate, commit: bool = True):
-    db_obj = db.query(models.Vessel).filter(
-        models.Vessel.imo == vessel.imo).first()
-    vessel_data = vessel.model_dump()
+    existing = db.query(models.Vessel).filter(
+        models.Vessel.imo == vessel.imo
+    ).first()
 
-    if db_obj:
-        for key, value in vessel_data.items():
-            setattr(db_obj, key, value)
-    else:
-        db_obj = models.Vessel(**vessel_data)
-        db.add(db_obj)
+    if existing:
+        if existing.name != vessel.name:
+            existing.name = vessel.name
+            if commit:
+                db.commit()
+                db.refresh(existing)
+        return existing
+
+    new_vessel = models.Vessel(**vessel.model_dump())
+    db.add(new_vessel)
 
     if commit:
         db.commit()
-        db.refresh(db_obj)
+        db.refresh(new_vessel)
 
-    return db_obj
+    return new_vessel
 
 
 def get_shipment_with_totals(db: Session, shipment_id: int):

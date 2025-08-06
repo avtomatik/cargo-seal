@@ -28,7 +28,8 @@ async def push_shipment(
         )
 
     sheet_names, operator, vessel = declaration_service.process_declaration_file(
-        file, db
+        file=file,
+        db=db,
     )
 
     return templates.TemplateResponse(
