@@ -8,12 +8,31 @@
 <body>
   <h1>Shipment File Info</h1>
   <p><strong>Operator:</strong> {{ operator }}</p>
+
   <h2>Sheets:</h2>
   <ul>
     {% for sheet in sheet_names %}
     <li>{{ sheet }}</li>
     {% endfor %}
   </ul>
+
+  {% if documents %}
+  <h2>Valid Vessel Documents</h2>
+  {% for category, items in documents|groupby("category") %}
+  <h3>{{ category.name }}</h3>
+  <ul>
+    {% for doc in items %}
+    <li>
+      <strong>Filename:</strong> {{ doc.filename or 'N/A' }}<br>
+      <strong>Number:</strong> {{ doc.number or 'N/A' }}<br>
+      <strong>Date:</strong> {{ doc.date.strftime('%Y-%m-%d') }}
+    </li>
+    {% endfor %}
+  </ul>
+  {% endfor %}
+  {% else %}
+  <p>No valid vessel documents found.</p>
+  {% endif %}
 </body>
 
 </html>

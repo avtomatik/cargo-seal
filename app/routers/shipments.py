@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import (APIRouter, Depends, File, HTTPException, Request,
                      UploadFile, status)
 from fastapi.responses import HTMLResponse
@@ -5,6 +7,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app import crud, deps, schemas
+from app.models import Document, DocumentCategory
 from app.services import declaration as declaration_service
 
 router = APIRouter(prefix='/shipments', tags=['shipments'])
@@ -32,13 +35,23 @@ async def push_shipment(
         db=db,
     )
 
+    valid_documents = db.query(Document).filter(
+        Document.vessel_id == vessel.id,
+        Document.category.in_([
+            DocumentCategory.CLASS_CERTIFICATE,
+            DocumentCategory.PI_POLICY
+        ]),
+        Document.date >= date.today()
+    ).all()
+
     return templates.TemplateResponse(
         'shipment_result.html',
         {
             'request': request,
             'sheet_names': sheet_names,
             'operator': operator,
-            'vessel': vessel
+            'vessel': vessel,
+            'documents': valid_documents
         }
     )
 
