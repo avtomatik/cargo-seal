@@ -1,7 +1,7 @@
 from enum import Enum as PyEnum
 
 from sqlalchemy import (Column, Date, Enum, Float, ForeignKey, Integer,
-                        Numeric, String)
+                        Numeric, String, UniqueConstraint)
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -38,6 +38,8 @@ class Coverage(Base):
 
     shipment = relationship('Shipment', back_populates='coverages')
     policy = relationship('Policy', backref='coverages')
+
+    __table_args__ = (UniqueConstraint('shipment_id', name='uq_shipment_id'),)
 
 
 class DocumentCategory(PyEnum):

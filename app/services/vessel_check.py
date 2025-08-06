@@ -11,7 +11,10 @@ VALID_DOCUMENT_CATEGORIES = [
 ]
 
 
-def get_valid_documents_with_provider_flag(db: Session, vessel_id: int) -> list[dict]:
+def get_valid_documents_with_provider_flag(
+    db: Session,
+    vessel_id: int
+) -> list[dict]:
     today = datetime.now().date()
 
     valid_documents = db.query(Document).filter(
@@ -21,18 +24,20 @@ def get_valid_documents_with_provider_flag(db: Session, vessel_id: int) -> list[
     ).all()
 
     results = []
-    for doc in valid_documents:
-        doc_data = {
-            'id': doc.id,
-            'filename': doc.filename,
-            'category': doc.category,
-            'provider': doc.provider,
-            'number': doc.number,
-            'date': doc.date,
-            'provider_agreed': (doc.provider and doc.provider.name in CLASSES_AGREED)
-            if doc.category == DocumentCategory.CLASS_CERTIFICATE
+    for document in valid_documents:
+        data = {
+            'id': document.id,
+            'filename': document.filename,
+            'category': document.category,
+            'provider': document.provider,
+            'number': document.number,
+            'date': document.date,
+            'provider_agreed': (
+                document.provider and document.provider.name in CLASSES_AGREED
+            )
+            if document.category == DocumentCategory.CLASS_CERTIFICATE
             else None
         }
-        results.append(doc_data)
+        results.append(data)
 
     return results
