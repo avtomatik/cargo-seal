@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
+from app import crud, deps, schemas
 from app.constants import TEMPLATE_DIR
 from app.services.coverage import generate_coverage_docx
-
-from .. import crud, deps, schemas
+from app.utils.coverage_transform import transform_flat_to_nested
 
 router = APIRouter(prefix='/coverage', tags=['coverage'])
 
@@ -61,4 +61,26 @@ def draft_coverage_docx(coverage_id: int, db: Session = Depends(deps.get_db)):
         headers={
             'Content-Disposition': f'attachment; filename={filename}'
         }
+    )
+
+
+@router.post('/draft-flat')
+def draft_coverage_docx_flat(
+    flat_data: schemas.CoverageDraftFlat,
+    db: Session = Depends(deps.get_db)
+):
+    nested = transform_flat_to_nested(db, flat_data)
+
+    nested_dict = nested.model_dump()
+    nested_dict['id'] = 0
+
+    buffer = generate_coverage_docx(
+        nested_dict, TEMPLATE_DIR / 'certificate.docx')
+
+    filename = f"certificate_{nested.date}_imo_{nested.shipment.vessel.imo}_{nested.shipment.vessel.name.lower().replace(' ', '_')}_draft.docx"
+
+    return StreamingResponse(
+        buffer,
+        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        headers={'Content-Disposition': f'attachment; filename={filename}'}
     )

@@ -25,8 +25,30 @@ cd cargo-seal
 ### 2. Create a Virtual Environment
 
 ```bash
+# Create a virtual environment named 'venv'
 python -m venv venv
-source venv/bin/activate  # on Windows: venv\Scripts\activate
+````
+
+**Activate the virtual environment:**
+
+* **On macOS/Linux:**
+
+```bash
+source venv/bin/activate
+```
+
+* **On Windows (Command Prompt):**
+
+```cmd
+venv\Scripts\activate.bat
+```
+
+* **On Windows (PowerShell):**
+
+```powershell
+venv\Scripts\Activate.ps1
+# If you get a permission error, run:
+# Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 ```
 
 ### 3. Install Dependencies

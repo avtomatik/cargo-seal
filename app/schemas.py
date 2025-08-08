@@ -49,6 +49,16 @@ class BillOfLadingCreate(BillOfLadingBase):
     pass
 
 
+class BillOfLadingFlat(BaseModel):
+    number: str
+    date: datetime.date
+    product: str
+    quantity_mt: float
+    price_per_unit: float
+    ccy: str
+    quantity_bbl: Optional[float] = 0
+
+
 class BillOfLadingRead(BaseModel):
     number: str
     date: datetime.date
@@ -73,6 +83,39 @@ class CoverageBase(BaseModel):
 
 class CoverageCreate(CoverageBase):
     date: datetime.date = Field(default_factory=datetime.date.today)
+
+
+class CoverageDraftCreate(BaseModel):
+    """
+    Schema for creating a draft coverage DOCX from JSON payload,
+    bypassing the database.
+    """
+    shipment: 'ShipmentRead'
+    policy: Optional['PolicyRead'] = None
+    ordinary_risks_rate: Decimal
+    war_risks_rate: Decimal
+    date: datetime.date
+    value_margin: float
+    premium: Optional[Decimal] = None
+
+    class Config:
+        from_attributes = True
+
+
+class CoverageDraftFlat(BaseModel):
+    deal_number: int
+    insured: str  # insured name
+    vessel: int   # IMO number
+    loadport: str  # "Name, Country"
+    disport: str  # "Name, Country"
+    operator: str  # "First Last"
+    bills_of_lading: List[BillOfLadingFlat]
+    policy_number: Optional[str] = None
+    ordinary_risks_rate: Decimal
+    war_risks_rate: Decimal
+    date: datetime.date
+    value_margin: float
+    premium: Optional[Decimal] = None
 
 
 class CoverageRead(BaseModel):
